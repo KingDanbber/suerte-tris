@@ -19,7 +19,7 @@
             --primary: #145a32;       /* Verde Bosque Oscuro */
             --secondary: #27ae60;     /* Verde Esmeralda */
             --gold: #f1c40f;          /* Dorado Brillante */
-            --gold-dark: #d4ac0d;     /* Dorado Oscuro */
+            --gold-light: #f9e79f;    /* Dorado Suave (Fondos) */
             --bg-gradient: linear-gradient(135deg, #0f3b25 0%, #1e8449 100%);
             --card-bg: #ffffff;
             --text-color: #2c3e50;
@@ -198,6 +198,55 @@
             border: 2px solid var(--primary);
         }
 
+        /* NUEVA SECCIÓN: RIFA DEL DÍA */
+        .rifa-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            background: rgba(241, 196, 15, 0.05);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .rifa-card {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 10px 5px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+
+        .rifa-card.today {
+            border: 2px solid var(--gold);
+            background: var(--gold-light);
+            transform: scale(1.05);
+            z-index: 1;
+        }
+
+        .rifa-title {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .rifa-card.today .rifa-title {
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        .rifa-num {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 4px 0;
+            display: block;
+        }
+
         /* MULTIPLICACIÓN ESTILIZADA */
         .multi-container {
             background: rgba(20, 90, 50, 0.05);
@@ -227,7 +276,6 @@
             flex-wrap: wrap;
         }
 
-        /* Celda de número "Probable" (Dorado/Fuerte) */
         .multi-cell {
             width: 30px;
             height: 40px;
@@ -244,7 +292,6 @@
             margin: 0 2px;
         }
 
-        /* Celda de número "Rezagado" (Gris/Débil) */
         .lagging-cell {
             width: 25px;
             height: 35px;
@@ -261,7 +308,6 @@
             opacity: 0.7;
         }
 
-        /* Separador Vertical */
         .separator {
             width: 2px;
             height: 40px;
@@ -329,6 +375,10 @@
             <h2 class="section-title">🪜 Escalera</h2>
             <div class="escalera-container" id="escalera"></div>
 
+            <h2 class="section-title" style="margin-top: 20px;">📅 La Rifa del Día</h2>
+            <div class="rifa-container" id="rifa-section">
+                </div>
+
             <h2 class="section-title" style="margin-top: 20px;">✖️ Multiplicación Maestra</h2>
             <div class="multi-container">
                 <div class="multi-block">
@@ -374,10 +424,9 @@
         const data = inputStr.split('').map(Number);
         const inputNum = parseInt(inputStr);
 
-        // Renderizar secciones
         renderGatos(data);
         renderEscalera(data, dateInput);
-        // Pasamos tanto el número (matemática) como el texto (visual)
+        renderRifa(dateInput); // Nueva Función
         renderMultiplicacion(inputNum, inputStr);
         
         document.getElementById('fecha-generacion').innerText = new Date().toLocaleString();
@@ -457,9 +506,47 @@
         container.appendChild(rowDiv);
     }
 
-    // --- LÓGICA MULTIPLICACIÓN (ACTUALIZADA) ---
+    // --- LÓGICA RIFA (NUEVO) ---
+    function renderRifa(dateString) {
+        const container = document.getElementById('rifa-section');
+        container.innerHTML = '';
+
+        // Función para obtener el día del mes desplazado (ayer/hoy/mañana)
+        const getDayFromOffset = (offset) => {
+            const d = new Date(dateString + 'T00:00:00');
+            d.setDate(d.getDate() + offset);
+            return d.getDate();
+        };
+
+        const offsets = [-1, 0, 1]; // Ayer, Hoy, Mañana
+        const labels = ["Ayer", "Hoy", "Mañana"];
+
+        offsets.forEach((offset, index) => {
+            const baseDay = getDayFromOffset(offset);
+            
+            // Lógica Rifa: Base, Base+33, Base+66 (Usamos % 100 por si pasa de 99)
+            const n1 = baseDay;
+            const n2 = (baseDay + 33) % 100;
+            const n3 = (baseDay + 66) % 100;
+
+            // Formato 2 dígitos (ej: 5 -> "05")
+            const pad = (n) => n.toString().padStart(2, '0');
+
+            const card = document.createElement('div');
+            card.className = offset === 0 ? 'rifa-card today' : 'rifa-card';
+            
+            card.innerHTML = `
+                <div class="rifa-title">${labels[index]}</div>
+                <span class="rifa-num">${pad(n1)}</span>
+                <span class="rifa-num">${pad(n2)}</span>
+                <span class="rifa-num">${pad(n3)}</span>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // --- LÓGICA MULTIPLICACIÓN ---
     function renderMultiplicacion(inputNum, inputStr) {
-        // Actualizar etiquetas visuales con el número ingresado
         document.getElementById('label-333').textContent = `${inputStr} X 333`;
         document.getElementById('label-777').textContent = `${inputStr} X 777`;
 
@@ -489,7 +576,6 @@
             container.appendChild(sep);
         };
 
-        // LÓGICA DE SEPARACIÓN
         if (len === 7) {
             digits.slice(0, 3).forEach(d => addCell(d, 'good'));
             addSeparator();
@@ -509,7 +595,6 @@
         }
     }
 
-    // --- DESCARGA ---
     function descargarImagen() {
         const captureElement = document.getElementById('capture-area');
         const btn = document.getElementById('btn-download');
@@ -535,4 +620,4 @@
 </script>
 
 </body>
-    </html>
+</html>
