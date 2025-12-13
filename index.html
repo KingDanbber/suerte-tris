@@ -19,7 +19,7 @@
             --primary: #145a32;       /* Verde Bosque Oscuro */
             --secondary: #27ae60;     /* Verde Esmeralda */
             --gold: #f1c40f;          /* Dorado Brillante */
-            --gold-light: #f9e79f;    /* Dorado Suave (Fondos) */
+            --gold-light: #f9e79f;    /* Dorado Suave */
             --bg-gradient: linear-gradient(135deg, #0f3b25 0%, #1e8449 100%);
             --card-bg: #ffffff;
             --text-color: #2c3e50;
@@ -198,7 +198,7 @@
             border: 2px solid var(--primary);
         }
 
-        /* NUEVA SECCIÓN: RIFA DEL DÍA */
+        /* RIFA DEL DÍA */
         .rifa-container {
             display: flex;
             justify-content: space-between;
@@ -247,7 +247,7 @@
             display: block;
         }
 
-        /* MULTIPLICACIÓN ESTILIZADA */
+        /* MULTIPLICACIÓN */
         .multi-container {
             background: rgba(20, 90, 50, 0.05);
             padding: 15px;
@@ -324,6 +324,19 @@
             border-top: 5px solid var(--gold);
         }
 
+        /* Firma (Footer dentro de la imagen) */
+        .signature-footer {
+            margin-top: 25px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
         .section-title {
             text-align: center; 
             color:var(--primary); 
@@ -334,12 +347,15 @@
             margin-bottom: 15px;
         }
 
-        .disclaimer {
+        /* Disclaimer Legal (Fuera de la imagen generalmente, o al fondo) */
+        .legal-disclaimer {
             margin-top: 2rem;
-            text-align: center;
-            font-size: 0.75rem;
-            color: #bdc3c7;
-            opacity: 0.8;
+            text-align: justify;
+            font-size: 0.65rem;
+            color: #95a5a6;
+            line-height: 1.4;
+            padding: 10px;
+            border-top: 1px solid #ecf0f1;
         }
     </style>
 </head>
@@ -376,8 +392,7 @@
             <div class="escalera-container" id="escalera"></div>
 
             <h2 class="section-title" style="margin-top: 20px;">📅 La Rifa del Día</h2>
-            <div class="rifa-container" id="rifa-section">
-                </div>
+            <div class="rifa-container" id="rifa-section"></div>
 
             <h2 class="section-title" style="margin-top: 20px;">✖️ Multiplicación Maestra</h2>
             <div class="multi-container">
@@ -394,19 +409,32 @@
                 </div>
             </div>
             
-            <p style="text-align: center; font-size: 0.7rem; color: #aaa; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-                🍀 Fecha de la Suerte: <span id="fecha-generacion"></span>
-            </p>
+            <div class="signature-footer">
+                © <span id="year"></span> DanKing92<br>
+                <span style="font-size: 0.65rem; color: #7f8c8d; font-weight: normal;">
+                    Trabajo Personal | Ayudado por Gemini AI
+                </span>
+                <br>
+                <span style="font-size: 0.6rem; color: #ccc; margin-top:5px; display:block;">
+                    Fecha de cálculo: <span id="fecha-generacion"></span>
+                </span>
+            </div>
         </div>
     </div>
 
-    <div class="disclaimer">
-        Entretenimiento numérico. ¡Mucha suerte!
+    <div class="legal-disclaimer">
+        <strong>⚠️ AVISO LEGAL Y DESCARGO DE RESPONSABILIDAD:</strong><br>
+        Esta aplicación es una herramienta de carácter exclusivamente recreativo y de entretenimiento. Los resultados, cálculos y patrones aquí generados se basan en algoritmos de numerología y probabilidad subjetiva. 
+        <strong>No garantizamos el éxito</strong>, premios ni ganancias en ningún sorteo o lotería oficial. El uso de esta información es responsabilidad única y exclusiva del usuario. 
+        "DanKing92" y los colaboradores involucrados en este desarrollo no se hacen responsables por el mal uso que se le pueda dar a esta información, ni por pérdidas económicas derivadas de su interpretación. 
+        Juegue con responsabilidad.
     </div>
 </div>
 
 <script>
     document.getElementById('dateInput').valueAsDate = new Date();
+    // Poner año actual automáticamente en la firma
+    document.getElementById('year').textContent = new Date().getFullYear();
 
     function sumMod10(a, b) {
         return (parseInt(a) + parseInt(b)) % 10;
@@ -426,7 +454,7 @@
 
         renderGatos(data);
         renderEscalera(data, dateInput);
-        renderRifa(dateInput); // Nueva Función
+        renderRifa(dateInput);
         renderMultiplicacion(inputNum, inputStr);
         
         document.getElementById('fecha-generacion').innerText = new Date().toLocaleString();
@@ -506,30 +534,23 @@
         container.appendChild(rowDiv);
     }
 
-    // --- LÓGICA RIFA (NUEVO) ---
+    // --- LÓGICA RIFA ---
     function renderRifa(dateString) {
         const container = document.getElementById('rifa-section');
         container.innerHTML = '';
-
-        // Función para obtener el día del mes desplazado (ayer/hoy/mañana)
         const getDayFromOffset = (offset) => {
             const d = new Date(dateString + 'T00:00:00');
             d.setDate(d.getDate() + offset);
             return d.getDate();
         };
-
-        const offsets = [-1, 0, 1]; // Ayer, Hoy, Mañana
+        const offsets = [-1, 0, 1];
         const labels = ["Ayer", "Hoy", "Mañana"];
 
         offsets.forEach((offset, index) => {
             const baseDay = getDayFromOffset(offset);
-            
-            // Lógica Rifa: Base, Base+33, Base+66 (Usamos % 100 por si pasa de 99)
             const n1 = baseDay;
             const n2 = (baseDay + 33) % 100;
             const n3 = (baseDay + 66) % 100;
-
-            // Formato 2 dígitos (ej: 5 -> "05")
             const pad = (n) => n.toString().padStart(2, '0');
 
             const card = document.createElement('div');
