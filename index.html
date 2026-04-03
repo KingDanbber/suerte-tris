@@ -1,644 +1,725 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Suerte Tris</title>
-    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍀</text></svg>">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1164/1164669.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#145a32">
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <style>
-        :root {
-            /* Paleta Temática Suerte */
-            --primary: #145a32;       /* Verde Bosque Oscuro */
-            --secondary: #27ae60;     /* Verde Esmeralda */
-            --gold: #f1c40f;          /* Dorado Brillante */
-            --gold-light: #f9e79f;    /* Dorado Suave */
-            --bg-gradient: linear-gradient(135deg, #0f3b25 0%, #1e8449 100%);
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-        }
+<style>
+/* ── THEME TOKENS ── */
+:root {
+    --gold:       #e8b923;
+    --gold-light: #f5d76e;
+    --gold-dim:   #7a5f0d;
+    --green-hi:   #27ae60;
+    --radius:     14px;
+    --glow-gold:  0 0 18px rgba(232,185,35,0.4);
+    --glow-green: 0 0 16px rgba(39,174,96,0.35);
+    --cell: clamp(36px, 10.8vw, 52px);
+}
+[data-theme="dark"] {
+    --bg:         #060f09;
+    --bg-card:    #0c1f12;
+    --bg-inp:     #0f2916;
+    --green-mid:  #1a5c2a;
+    --text:       #d4edda;
+    --text-sub:   #7a9e85;
+    --border:     rgba(232,185,35,0.22);
+    --border-sub: rgba(255,255,255,0.06);
+    --shadow:     0 6px 28px rgba(0,0,0,0.55);
+    --py-bg:      #1a5c2a;
+    --py-fg:      #d4edda;
+}
+[data-theme="light"] {
+    --bg:         #eaf5ec;
+    --bg-card:    #ffffff;
+    --bg-inp:     #f2f9f4;
+    --green-mid:  #1e8449;
+    --text:       #0f2916;
+    --text-sub:   #4d7a5a;
+    --border:     rgba(20,90,40,0.2);
+    --border-sub: rgba(0,0,0,0.07);
+    --shadow:     0 4px 20px rgba(0,0,0,0.1);
+    --py-bg:      #1e8449;
+    --py-fg:      #ffffff;
+}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-gradient);
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-color);
-            overscroll-behavior-y: none; 
-        }
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            border: 2px solid var(--gold);
-            box-sizing: border-box;
-        }
+body {
+    font-family:'Nunito',sans-serif;
+    background:var(--bg);
+    background-image:
+        radial-gradient(ellipse at 15% 5%, rgba(39,174,96,0.07) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 90%, rgba(232,185,35,0.05) 0%, transparent 45%);
+    min-height:100vh;
+    color:var(--text);
+    padding:0 0 48px;
+    overscroll-behavior-y:none;
+    transition:background .3s,color .3s;
+}
+.wrap { max-width:520px; margin:0 auto; padding:0 12px; }
 
-        h1 {
-            text-align: center;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
-            font-size: 1.8rem;
-        }
+/* ── THEME BAR ── */
+.theme-bar { display:flex; justify-content:flex-end; padding:12px 12px 0; max-width:520px; margin:0 auto; }
+.theme-toggle {
+    background:var(--bg-card); border:1px solid var(--border);
+    border-radius:50px; padding:7px 14px;
+    font-family:'Nunito',sans-serif; font-size:0.73rem; font-weight:800;
+    color:var(--text-sub); cursor:pointer; display:flex; align-items:center; gap:6px;
+    transition:all .2s; letter-spacing:.5px;
+}
+.theme-toggle:hover { border-color:var(--gold); color:var(--gold); }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            padding: 15px;
-            background: rgba(241, 196, 15, 0.1);
-            border-radius: 15px;
-        }
+/* ── HEADER ── */
+.app-header { text-align:center; padding:18px 16px 20px; }
+.clover-icon {
+    font-size:clamp(2.2rem,8vw,3rem); display:block; line-height:1.2;
+    filter:drop-shadow(0 0 14px rgba(39,174,96,0.65));
+    animation:float 3.2s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.app-title {
+    font-family:'Cinzel',serif; font-size:clamp(1.6rem,7vw,2.2rem); font-weight:900;
+    letter-spacing:clamp(2px,1vw,5px);
+    background:linear-gradient(135deg,var(--gold-light) 0%,var(--gold) 55%,#c9930a 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    margin-top:4px; line-height:1.1;
+}
+.app-tagline { font-size:clamp(0.58rem,2vw,0.7rem); color:var(--text-sub); letter-spacing:2px; text-transform:uppercase; margin-top:5px; }
 
-        input[type="text"] {
-            padding: 12px;
-            font-size: 1.3rem;
-            border: 2px solid var(--secondary);
-            border-radius: 8px;
-            text-align: center;
-            width: 120px;
-            letter-spacing: 4px;
-            font-weight: bold;
-            color: var(--primary);
-            outline: none;
-            font-size: 16px; 
-        }
+/* ── INPUT CARD ── */
+.input-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:14px; box-shadow:var(--shadow); }
+.input-row { display:flex; gap:10px; margin-bottom:12px; }
+.input-wrap { flex:1; min-width:0; }
+.input-label { display:block; font-size:.62rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:800; margin-bottom:5px; }
+input[type="text"],input[type="date"] {
+    width:100%; padding:11px 10px;
+    font-family:'Nunito',sans-serif; font-size:clamp(.9rem,3.2vw,1.05rem); font-weight:800;
+    background:var(--bg-inp); border:1.5px solid var(--border); border-radius:10px;
+    color:var(--gold); outline:none; text-align:center; letter-spacing:2px;
+    transition:border-color .2s,box-shadow .2s; -webkit-appearance:none;
+}
+input[type="text"]::placeholder { color:var(--text-sub); letter-spacing:0; font-size:.72rem; font-weight:600; }
+input[type="text"]:focus,input[type="date"]:focus { border-color:var(--gold); box-shadow:var(--glow-gold); }
+input[type="date"] { letter-spacing:0; }
+input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(.6) sepia(1) hue-rotate(15deg) brightness(.9); cursor:pointer; }
+.btn-generate {
+    width:100%; padding:14px;
+    font-family:'Cinzel',serif; font-size:clamp(.83rem,3vw,.98rem); font-weight:700; letter-spacing:2px;
+    background:linear-gradient(135deg,#c9930a 0%,var(--gold) 50%,#f5d76e 100%);
+    color:#0a1f05; border:none; border-radius:10px; cursor:pointer;
+    box-shadow:0 4px 18px rgba(232,185,35,.45); transition:transform .15s,box-shadow .15s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn-generate:active { transform:scale(.97); }
 
-        input[type="date"] {
-            padding: 12px;
-            border: 2px solid var(--secondary);
-            border-radius: 8px;
-            color: var(--primary);
-            font-weight: bold;
-            font-size: 16px;
-        }
+/* ── RESULTS ── */
+#results { display:none; }
+#results.visible { display:block; animation:fadeUp .4s ease both; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-        button.generate-btn {
-            padding: 12px 20px;
-            font-size: 1.1rem;
-            background: linear-gradient(to bottom, #f1c40f, #d4ac0d);
-            color: #fff;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            justify-content: center;
-        }
-        
-        #btn-download {
-            padding: 12px 25px;
-            font-size: 1rem;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 0 auto 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 80%;
-        }
+.btn-download {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; padding:12px; margin-bottom:14px;
+    font-family:'Nunito',sans-serif; font-size:.87rem; font-weight:800;
+    background:transparent; border:1.5px solid var(--green-hi); border-radius:50px;
+    color:var(--green-hi); cursor:pointer; transition:background .2s,box-shadow .2s;
+}
+.btn-download:hover { background:rgba(39,174,96,.1); box-shadow:var(--glow-green); }
 
-        /* GATOS */
-        .gatos-container {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 1.5rem;
-        }
+/* ── CAPTURE HEADER ── */
+.capture-header {
+    background:linear-gradient(135deg,#0f2916 0%,#1a5c2a 100%);
+    border-radius:10px 10px 0 0; padding:14px 16px 12px; text-align:center;
+    border-bottom:2px solid var(--gold-dim);
+}
+[data-theme="light"] .capture-header { background:linear-gradient(135deg,#145a32 0%,#1e8449 100%); }
+.ch-label  { font-size:.58rem; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; margin-bottom:3px; }
+.ch-number { font-family:'Cinzel',serif; font-size:clamp(1.5rem,6vw,2rem); font-weight:900; color:var(--gold); letter-spacing:6px; text-shadow:0 0 20px rgba(232,185,35,.5); }
+.ch-date   { font-size:.63rem; color:rgba(255,255,255,.4); margin-top:3px; letter-spacing:1px; }
 
-        .gato-wrapper { text-align: center; }
+/* ── SECTION CARD ── */
+.section-card {
+    background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:clamp(14px,4vw,20px) clamp(12px,3.5vw,18px); margin-bottom:12px;
+    box-shadow:var(--shadow); overflow:hidden;
+}
+.section-card.no-top-r { border-top-left-radius:0; border-top-right-radius:0; margin-bottom:12px; border-top:none; }
+.section-title {
+    font-family:'Cinzel',serif; font-size:clamp(.72rem,2.4vw,.86rem); font-weight:700;
+    letter-spacing:2px; color:var(--gold); text-transform:uppercase;
+    display:flex; align-items:center; gap:8px;
+    margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border);
+}
 
-        .grid-3x3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-            background: var(--gold);
-            padding: 4px;
-            border-radius: 8px;
-            width: 140px;
-            margin: 0 auto;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
+/* ── GATOS (responsive, never overflow) ── */
+.gatos-row { display:flex; justify-content:center; gap:clamp(8px,3.5vw,20px); align-items:flex-start; }
+.gato-block { text-align:center; flex:0 0 auto; }
+.gato-label { font-size:clamp(.58rem,1.9vw,.68rem); letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); margin-bottom:6px; font-weight:800; }
+.grid-3x3 {
+    display:grid; grid-template-columns:repeat(3,var(--cell));
+    gap:clamp(2px,.6vw,4px); background:var(--gold-dim);
+    padding:clamp(2px,.6vw,4px); border-radius:10px; box-shadow:var(--glow-gold);
+}
+.cell {
+    width:var(--cell); height:var(--cell); background:var(--bg-inp);
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(1.05rem,3.8vw,1.4rem); font-weight:900; color:var(--gold-light);
+    border-radius:clamp(4px,1.2vw,7px);
+}
 
-        .cell {
-            background: white;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: var(--primary);
-        }
+/* ── ESCALERA ── */
+.escalera-wrap { display:flex; flex-direction:column; align-items:center; gap:clamp(3px,1vw,5px); }
+.row { display:flex; gap:clamp(3px,1vw,5px); }
+.pyramid-cell {
+    width:clamp(24px,7vw,30px); height:clamp(24px,7vw,30px);
+    background:var(--py-bg); color:var(--py-fg); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(.72rem,2.3vw,.85rem); font-weight:800;
+}
+.final-row .pyramid-cell {
+    width:clamp(34px,9.5vw,42px); height:clamp(34px,9.5vw,42px);
+    background:var(--gold); color:#0a1f05;
+    font-size:clamp(1rem,3.2vw,1.3rem); font-weight:900; box-shadow:var(--glow-gold);
+}
 
-        /* ESCALERA */
-        .escalera-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            background: #fdfefe;
-            padding: 15px;
-            border-radius: 15px;
-            border: 2px dashed var(--gold);
-            margin-bottom: 1.5rem;
-        }
+/* ── DIAMANTE ── */
+.diamante-wrap { display:flex; flex-direction:column; align-items:center; }
+.diamond-grid {
+    --dc:clamp(34px,10vw,46px);
+    display:grid; grid-template-columns:repeat(5,var(--dc)); grid-template-rows:repeat(5,var(--dc));
+    gap:clamp(2px,.7vw,4px);
+}
+.d-cell { border-radius:clamp(5px,1.3vw,9px); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:clamp(.95rem,3.3vw,1.25rem); }
+.d-empty  { background:transparent; }
+.d-corner { background:var(--bg-inp); border:1.5px solid rgba(39,174,96,.3); color:var(--green-hi); }
+.d-edge   { background:var(--bg-inp); border:1.5px solid var(--gold-dim); color:var(--gold-light); }
+.d-center { background:var(--gold); color:#0a1f05; font-size:clamp(1.1rem,3.8vw,1.5rem); box-shadow:0 0 22px rgba(232,185,35,.65); border-radius:50%; }
+.diamante-legend { display:flex; gap:14px; margin-top:12px; justify-content:center; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:5px; font-size:.6rem; letter-spacing:1px; text-transform:uppercase; color:var(--text-sub); font-weight:700; }
+.legend-dot { width:10px; height:10px; border-radius:3px; }
+.legend-dot.corner { background:var(--green-hi); }
+.legend-dot.edge   { background:var(--gold-light); }
+.legend-dot.center { background:var(--gold); border-radius:50%; }
 
-        .row { display: flex; gap: 6px; }
+/* ── RIFA ── */
+.rifa-row { display:flex; gap:8px; }
+.rifa-card { flex:1; background:var(--bg-inp); border:1px solid var(--border-sub); border-radius:12px; padding:12px 5px; text-align:center; }
+.rifa-card.today { background:rgba(232,185,35,.1); border:1.5px solid var(--gold); box-shadow:var(--glow-gold); transform:scale(1.04); }
+.rifa-day { font-size:.58rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:800; margin-bottom:6px; }
+.rifa-card.today .rifa-day { color:var(--gold); }
+.rifa-num { display:block; font-size:clamp(.95rem,3.3vw,1.2rem); font-weight:900; color:var(--gold-light); line-height:1.7; }
+.rifa-card:not(.today) .rifa-num { color:var(--text-sub); font-size:clamp(.85rem,2.8vw,1rem); }
 
-        .pyramid-cell {
-            width: 30px;
-            height: 30px;
-            background: var(--secondary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
+/* ── MULTIPLICACIÓN ── */
+.multi-block { margin-bottom:14px; }
+.multi-block:last-child { margin-bottom:0; }
+.multi-eq { font-size:.66rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:800; margin-bottom:8px; text-align:center; }
+.multi-grid { display:flex; align-items:center; justify-content:center; gap:clamp(1px,.5vw,3px); flex-wrap:nowrap; }
+.multi-cell { width:clamp(26px,8vw,34px); height:clamp(34px,10vw,44px); background:var(--bg-inp); border:1.5px solid var(--gold-dim); border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:clamp(.95rem,3.2vw,1.25rem); color:var(--gold-light); flex-shrink:0; }
+.multi-cell.hl { border-color:var(--gold); box-shadow:0 0 8px rgba(232,185,35,.3); }
+.lagging-cell { width:clamp(20px,6vw,26px); height:clamp(28px,8.5vw,36px); background:transparent; border:1px solid var(--border-sub); border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:clamp(.72rem,2.3vw,.88rem); color:var(--text-sub); font-weight:600; flex-shrink:0; }
+.separator { width:2px; height:clamp(28px,8vw,36px); background:var(--gold-dim); border-radius:2px; margin:0 clamp(2px,.7vw,5px); flex-shrink:0; }
+.multi-divider { border:none; border-top:1px dashed var(--border-sub); margin:12px 0; }
 
-        .final-row .pyramid-cell {
-            background: var(--gold);
-            color: #000;
-            width: 40px;
-            height: 40px;
-            font-size: 1.3rem;
-            border: 2px solid var(--primary);
-        }
+/* ── CAPTURE FOOTER ── */
+.capture-footer { padding:14px 0 4px; text-align:center; border-top:1px solid var(--border); margin-top:4px; }
+.capture-footer .brand { font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:2px; color:var(--gold); font-weight:700; }
+.capture-footer .sub  { font-size:.57rem; color:var(--text-sub); margin-top:2px; letter-spacing:.6px; }
+.capture-footer .ts   { font-size:.52rem; color:var(--border); margin-top:2px; }
 
-        /* RIFA DEL DÍA */
-        .rifa-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 1.5rem;
-            background: rgba(241, 196, 15, 0.05);
-            padding: 10px;
-            border-radius: 10px;
-        }
+/* ── GENERADOR ── */
+.gen-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:clamp(14px,4vw,20px) clamp(12px,3.5vw,18px); margin-bottom:12px; box-shadow:var(--shadow); }
+.cifras-label { font-size:.62rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:800; margin-bottom:9px; }
+.cifras-row { display:flex; gap:8px; margin-bottom:13px; justify-content:center; }
+.cifra-btn { flex:1; max-width:72px; padding:9px 4px; font-family:'Nunito',sans-serif; font-size:.85rem; font-weight:900; background:var(--bg-inp); border:1.5px solid var(--border); border-radius:8px; color:var(--text-sub); cursor:pointer; text-align:center; transition:all .18s; }
+.cifra-btn.active { background:var(--gold); border-color:var(--gold); color:#0a1f05; box-shadow:var(--glow-gold); }
+.btn-generar { width:100%; padding:12px; font-family:'Cinzel',serif; font-size:clamp(.78rem,2.7vw,.88rem); font-weight:700; letter-spacing:1.5px; background:linear-gradient(135deg,var(--green-mid) 0%,var(--green-hi) 100%); color:#fff; border:none; border-radius:10px; cursor:pointer; margin-bottom:14px; box-shadow:var(--glow-green); transition:transform .15s; }
+.btn-generar:active { transform:scale(.97); }
+.gen-results { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.gen-item { border-radius:10px; padding:12px 8px; text-align:center; border:1.5px solid var(--border); background:var(--bg-inp); }
+.gen-item.from-method { border-color:var(--gold-dim); background:rgba(232,185,35,.07); }
+.gen-item.random-pick { border-color:rgba(39,174,96,.3); background:rgba(39,174,96,.06); }
+.gen-tag { font-size:.55rem; letter-spacing:1.5px; text-transform:uppercase; font-weight:800; margin-bottom:6px; }
+.gen-item.from-method .gen-tag { color:var(--gold); }
+.gen-item.random-pick .gen-tag { color:var(--green-hi); }
+.gen-number { font-family:'Cinzel',serif; font-size:clamp(1.35rem,5vw,1.75rem); font-weight:900; letter-spacing:4px; }
+.gen-item.from-method .gen-number { color:var(--gold-light); }
+.gen-item.random-pick .gen-number { color:var(--green-hi); }
+.gen-empty { grid-column:1/-1; text-align:center; font-size:.76rem; color:var(--text-sub); padding:10px; }
 
-        .rifa-card {
-            flex: 1;
-            background: white;
-            border-radius: 8px;
-            padding: 10px 5px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border: 1px solid #eee;
-        }
+/* ── RECOMENDACIONES ── */
+.recs-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:12px; box-shadow:var(--shadow); }
+.recs-toggle { width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:transparent; border:none; cursor:pointer; font-family:'Cinzel',serif; font-size:clamp(.7rem,2.3vw,.82rem); font-weight:700; letter-spacing:1.5px; color:var(--text-sub); text-align:left; gap:8px; }
+.recs-toggle .rl { display:flex; align-items:center; gap:8px; }
+.recs-arrow { transition:transform .3s; font-size:.72rem; }
+.recs-toggle.open .recs-arrow { transform:rotate(180deg); }
+.recs-body { max-height:0; overflow:hidden; transition:max-height .4s ease; }
+.recs-body.open { max-height:900px; }
+.recs-inner { padding:0 16px 16px; }
+.rec-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border-sub); }
+.rec-item:last-child { border-bottom:none; }
+.rec-ico { font-size:1.05rem; flex-shrink:0; margin-top:1px; }
+.rec-text { flex:1; }
+.rec-title { font-size:.77rem; font-weight:800; color:var(--text); margin-bottom:2px; }
+.rec-desc  { font-size:.63rem; color:var(--text-sub); line-height:1.5; }
+.rec-badge { font-size:.5rem; letter-spacing:1px; text-transform:uppercase; font-weight:800; padding:2px 7px; border-radius:20px; flex-shrink:0; margin-top:1px; align-self:flex-start; }
+.badge-n { background:rgba(232,185,35,.15); color:var(--gold); }
+.badge-p { background:rgba(39,174,96,.12); color:var(--green-hi); }
 
-        .rifa-card.today {
-            border: 2px solid var(--gold);
-            background: var(--gold-light);
-            transform: scale(1.05);
-            z-index: 1;
-        }
-
-        .rifa-title {
-            font-size: 0.8rem;
-            color: #7f8c8d;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .rifa-card.today .rifa-title {
-            color: var(--primary);
-            font-weight: 900;
-        }
-
-        .rifa-num {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 4px 0;
-            display: block;
-        }
-
-        /* MULTIPLICACIÓN */
-        .multi-container {
-            background: rgba(20, 90, 50, 0.05);
-            padding: 15px;
-            border-radius: 15px;
-            border: 1px solid var(--secondary);
-        }
-
-        .multi-block {
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .multi-label {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-        }
-
-        .multi-grid {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 2px;
-            flex-wrap: wrap;
-        }
-
-        .multi-cell {
-            width: 30px;
-            height: 40px;
-            background: white;
-            border: 2px solid var(--gold);
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 1.3rem;
-            color: var(--primary);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            margin: 0 2px;
-        }
-
-        .lagging-cell {
-            width: 25px;
-            height: 35px;
-            background: #f0f0f0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: normal;
-            font-size: 1rem;
-            color: #7f8c8d;
-            margin: 0 2px;
-            opacity: 0.7;
-        }
-
-        .separator {
-            width: 2px;
-            height: 40px;
-            background-color: var(--gold);
-            margin: 0 6px;
-            border-radius: 2px;
-        }
-
-        /* Contenedor de Captura */
-        #capture-area {
-            background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            border-top: 5px solid var(--gold);
-        }
-
-        /* Firma (Footer dentro de la imagen) */
-        .signature-footer {
-            margin-top: 25px;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--primary);
-            font-weight: bold;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .section-title {
-            text-align: center; 
-            color:var(--primary); 
-            font-size:1.3rem; 
-            margin-top:0;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-        }
-
-        /* Disclaimer Legal (Fuera de la imagen generalmente, o al fondo) */
-        .legal-disclaimer {
-            margin-top: 2rem;
-            text-align: justify;
-            font-size: 0.65rem;
-            color: #95a5a6;
-            line-height: 1.4;
-            padding: 10px;
-            border-top: 1px solid #ecf0f1;
-        }
-    </style>
+/* ── DISCLAIMER ── */
+.disclaimer { padding:12px 14px; background:rgba(255,255,255,.02); border:1px solid var(--border-sub); border-radius:10px; font-size:.57rem; color:var(--text-sub); line-height:1.6; text-align:justify; opacity:.7; }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🍀 Suerte Tris 💰</h1>
-    
-    <div class="input-group">
-        <input type="text" id="trisInput" maxlength="5" placeholder="N° Ganador" onkeypress="return /[0-9]/i.test(event.key)">
-        <input type="date" id="dateInput"> 
-        <button class="generate-btn" onclick="calcular()">⚡ Atraer Suerte</button>
+<!-- THEME TOGGLE -->
+<div class="theme-bar">
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️&nbsp; Modo Claro</button>
+</div>
+
+<div class="wrap">
+
+    <!-- HEADER -->
+    <div class="app-header">
+        <span class="clover-icon">🍀</span>
+        <h1 class="app-title">SUERTE TRIS</h1>
+        <p class="app-tagline">Tu portal de números de suerte</p>
     </div>
 
-    <div id="results" style="display: none;">
-        
-        <button id="btn-download" onclick="descargarImagen()">📸 Guardar Amuleto</button>
+    <!-- INPUT -->
+    <div class="input-card">
+        <div class="input-row">
+            <div class="input-wrap">
+                <label class="input-label" for="trisInput">N° Ganador</label>
+                <input type="text" id="trisInput" maxlength="5"
+                       placeholder="Último Resultado Tris"
+                       oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            </div>
+            <div class="input-wrap" style="max-width:150px">
+                <label class="input-label" for="dateInput">Fecha</label>
+                <input type="date" id="dateInput">
+            </div>
+        </div>
+        <button class="btn-generate" onclick="calcular()">⚡ &nbsp;ATRAER SUERTE</button>
+    </div>
 
+    <!-- RESULTS -->
+    <div id="results">
+
+        <button class="btn-download" id="btn-download" onclick="descargarImagen()">
+            📸 &nbsp;Guardar Amuleto como Imagen
+        </button>
+
+        <!-- ═══ CAPTURE AREA ═══ -->
         <div id="capture-area">
-            
-            <h2 class="section-title">🔮 Tableros</h2>
-            <div class="gatos-container">
-                <div class="gato-wrapper">
-                    <h3 style="margin-bottom:8px; font-size:1rem;">Gato 1</h3>
-                    <div class="grid-3x3" id="gato1"></div>
-                </div>
-                <div class="gato-wrapper">
-                    <h3 style="margin-bottom:8px; font-size:1rem;">Gato 2</h3>
-                    <div class="grid-3x3" id="gato2"></div>
+
+            <!-- Title shown in image -->
+            <div class="capture-header">
+                <div class="ch-label">🍀 Suerte Tris — Análisis del número</div>
+                <div class="ch-number" id="ch-number">—</div>
+                <div class="ch-date" id="ch-date"></div>
+            </div>
+
+            <!-- TABLEROS -->
+            <div class="section-card no-top-r">
+                <div class="section-title"><span>🔮</span> Tableros</div>
+                <div class="gatos-row">
+                    <div class="gato-block">
+                        <div class="gato-label">Gato 1</div>
+                        <div class="grid-3x3" id="gato1"></div>
+                    </div>
+                    <div class="gato-block">
+                        <div class="gato-label">Gato 2</div>
+                        <div class="grid-3x3" id="gato2"></div>
+                    </div>
                 </div>
             </div>
 
-            <h2 class="section-title">🪜 Escalera</h2>
-            <div class="escalera-container" id="escalera"></div>
+            <!-- ESCALERA -->
+            <div class="section-card">
+                <div class="section-title"><span>🪜</span> Escalera</div>
+                <div class="escalera-wrap" id="escalera"></div>
+            </div>
 
-            <h2 class="section-title" style="margin-top: 20px;">📅 La Rifa del Día</h2>
-            <div class="rifa-container" id="rifa-section"></div>
+            <!-- DIAMANTE -->
+            <div class="section-card">
+                <div class="section-title"><span>💎</span> Diamante de la Suerte</div>
+                <div class="diamante-wrap" id="diamante"></div>
+                <div class="diamante-legend">
+                    <div class="legend-item"><div class="legend-dot corner"></div>Esquinas (original)</div>
+                    <div class="legend-item"><div class="legend-dot edge"></div>Brazos (calculado)</div>
+                    <div class="legend-item"><div class="legend-dot center"></div>Centro (clave)</div>
+                </div>
+            </div>
 
-            <h2 class="section-title" style="margin-top: 20px;">✖️ Multiplicación Maestra</h2>
-            <div class="multi-container">
+            <!-- RIFA -->
+            <div class="section-card">
+                <div class="section-title"><span>📅</span> La Rifa del Día</div>
+                <div class="rifa-row" id="rifa-section"></div>
+            </div>
+
+            <!-- MULTIPLICACIÓN -->
+            <div class="section-card">
+                <div class="section-title"><span>✖️</span> Multiplicación Maestra</div>
                 <div class="multi-block">
-                    <div class="multi-label" id="label-333"></div>
+                    <div class="multi-eq" id="label-333"></div>
                     <div class="multi-grid" id="res-333"></div>
                 </div>
-                
-                <div style="border-top: 1px dashed #ccc; margin: 15px 0;"></div>
-                
-                <div class="multi-block" style="margin-bottom:0;">
-                    <div class="multi-label" id="label-777"></div>
+                <hr class="multi-divider">
+                <div class="multi-block">
+                    <div class="multi-eq" id="label-777"></div>
                     <div class="multi-grid" id="res-777"></div>
                 </div>
             </div>
-            
-            <div class="signature-footer">
-                © <span id="year"></span> DanKing92<br>
-                <span style="font-size: 0.65rem; color: #7f8c8d; font-weight: normal;">
-                    Trabajo Personal | Ayudado por Gemini AI
-                </span>
-                <br>
-                <span style="font-size: 0.6rem; color: #ccc; margin-top:5px; display:block;">
-                    Fecha de cálculo: <span id="fecha-generacion"></span>
-                </span>
+
+            <!-- FOOTER inside image -->
+            <div class="capture-footer">
+                <div class="brand">© <span id="year"></span> &nbsp;DANKING92</div>
+                <div class="sub">Trabajo Personal &nbsp;|&nbsp; Ayudado por Gemini AI &amp; Claude IA</div>
+                <div class="ts">Generado el: <span id="fecha-generacion"></span></div>
+            </div>
+
+        </div><!-- /capture-area -->
+
+        <!-- ═══ GENERADOR AUTOMÁTICO (outside capture) ═══ -->
+        <div class="gen-card" style="margin-top:14px;">
+            <div class="section-title" style="margin-bottom:10px;"><span>🎰</span> Generador Automático</div>
+            <p class="cifras-label">Selecciona cuántas cifras:</p>
+            <div class="cifras-row">
+                <button class="cifra-btn" data-val="2" onclick="setCifras(this)">2 cifras</button>
+                <button class="cifra-btn" data-val="3" onclick="setCifras(this)">3 cifras</button>
+                <button class="cifra-btn active" data-val="4" onclick="setCifras(this)">4 cifras</button>
+                <button class="cifra-btn" data-val="5" onclick="setCifras(this)">5 cifras</button>
+            </div>
+            <button class="btn-generar" onclick="generarNumeros()">🎲 &nbsp;GENERAR MIS NÚMEROS</button>
+            <div class="gen-results" id="gen-results">
+                <div class="gen-empty">Presiona "Generar" para ver tus números de suerte</div>
             </div>
         </div>
-    </div>
 
-    <div class="legal-disclaimer">
-        <strong>⚠️ AVISO LEGAL Y DESCARGO DE RESPONSABILIDAD:</strong><br>
-        Esta aplicación es una herramienta de carácter exclusivamente recreativo y de entretenimiento. Los resultados, cálculos y patrones aquí generados se basan en algoritmos de numerología y probabilidad subjetiva. 
-        <strong>No garantizamos el éxito</strong>, premios ni ganancias en ningún sorteo o lotería oficial. El uso de esta información es responsabilidad única y exclusiva del usuario. 
-        "DanKing92" y los colaboradores involucrados en este desarrollo no se hacen responsables por el mal uso que se le pueda dar a esta información, ni por pérdidas económicas derivadas de su interpretación. 
-        Juegue con responsabilidad.
-    </div>
-</div>
+        <!-- ═══ RECOMENDACIONES ═══ -->
+        <div class="recs-card">
+            <button class="recs-toggle" id="recsBtn" onclick="toggleRecs()">
+                <div class="rl"><span>💡</span><span>PRÓXIMAS MEJORAS &amp; IDEAS</span></div>
+                <span class="recs-arrow" id="recsArrow">▼</span>
+            </button>
+            <div class="recs-body" id="recsBody">
+                <div class="recs-inner">
+                    <div class="rec-item">
+                        <span class="rec-ico">📊</span>
+                        <div class="rec-text">
+                            <div class="rec-title">Historial de Análisis</div>
+                            <div class="rec-desc">Guardar localmente los últimos números analizados con fecha y resultados, para consultar sin conexión.</div>
+                        </div>
+                        <span class="rec-badge badge-n">Idea</span>
+                    </div>
+                    <div class="rec-item">
+                        <span class="rec-ico">🔔</span>
+                        <div class="rec-text">
+                            <div class="rec-title">Recordatorio de Sorteos Tris</div>
+                            <div class="rec-desc">Notificaciones push con los horarios del día: Classic, Día, Tarde y Noche.</div>
+                        </div>
+                        <span class="rec-badge badge-n">Idea</span>
+                    </div>
+                    <div class="rec-item">
+                        <span class="rec-ico">🌐</span>
+                        <div class="rec-text">
+                            <div class="rec-title">Consulta Automática del Resultado</div>
+                            <div class="rec-desc">Obtener el último número ganador Tris automáticamente vía API, sin ingresarlo de forma manual.</div>
+                        </div>
+                        <span class="rec-badge badge-p">Avanzado</span>
+                    </div>
+                    <div class="rec-item">
+                        <span class="rec-ico">📈</span>
+                        <div class="rec-text">
+                            <div class="rec-title">Análisis de Frecuencia de Dígitos</div>
+                            <div class="rec-desc">Gráfica de qué dígitos (0–9) salen más en los métodos a lo largo del tiempo, con el historial guardado.</div>
+                        </div>
+                        <span class="rec-badge badge-n">Idea</span>
+                    </div>
+                    <div class="rec-item">
+                        <span class="rec-ico">📱</span>
+                        <div class="rec-text">
+                            <div class="rec-title">App Instalable (PWA)</div>
+                            <div class="rec-desc">Agregar Service Worker y manifiesto completo para instalarse en la pantalla de inicio como app nativa.</div>
+                        </div>
+                        <span class="rec-badge badge-p">Avanzado</span>
+                    </div>
+                    <div class="rec-item">
+                        <span class="rec-ico">🔢</span>
+                        <div class="rec-text">
+                            <div class="rec-title">Numerología Personal</div>
+                            <div class="rec-desc">Incorporar la fecha de nacimiento del usuario para generar un "número de suerte personal" combinado con los métodos actuales.</div>
+                        </div>
+                        <span class="rec-badge badge-n">Idea</span>
+                    </div>
+                    <div class="rec-item">
+                        <span class="rec-ico">💚</span>
+                        <div class="rec-text">
+                            <div class="rec-title">Compartir directo a WhatsApp</div>
+                            <div class="rec-desc">Botón de un tap para compartir el amuleto generado en WhatsApp, sin necesidad de descargar primero.</div>
+                        </div>
+                        <span class="rec-badge badge-n">Idea</span>
+                    </div>
+                    <div class="rec-item">
+                        <span class="rec-ico">🌙</span>
+                        <div class="rec-text">
+                            <div class="rec-title">Más Métodos Numerológicos</div>
+                            <div class="rec-desc">Agregar métodos adicionales: Triángulo de Pascal, Cruz de San Andrés, Cuadrado Mágico personalizado.</div>
+                        </div>
+                        <span class="rec-badge badge-n">Idea</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DISCLAIMER -->
+        <div class="disclaimer">
+            <strong>⚠️ Aviso Legal:</strong> Herramienta exclusivamente recreativa y de entretenimiento. Los resultados se basan en numerología y probabilidad subjetiva. <strong>No se garantizan premios ni ganancias</strong> en ningún sorteo o lotería. Juegue con responsabilidad.
+        </div>
+
+    </div><!-- /results -->
+</div><!-- /wrap -->
 
 <script>
-    document.getElementById('dateInput').valueAsDate = new Date();
-    // Poner año actual automáticamente en la firma
-    document.getElementById('year').textContent = new Date().getFullYear();
+/* ─── INIT ─── */
+document.getElementById('dateInput').valueAsDate = new Date();
+document.getElementById('year').textContent = new Date().getFullYear();
 
-    function sumMod10(a, b) {
-        return (parseInt(a) + parseInt(b)) % 10;
+let currentTheme = 'dark';
+let methodDigitsPool = [];
+let activeCifras = 4;
+
+/* ─── THEME ─── */
+function toggleTheme() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.getElementById('themeBtn').innerHTML =
+        currentTheme === 'dark' ? '☀️&nbsp; Modo Claro' : '🌙&nbsp; Modo Oscuro';
+}
+
+/* ─── CIFRAS ─── */
+function setCifras(el) {
+    document.querySelectorAll('.cifra-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    activeCifras = parseInt(el.dataset.val);
+}
+
+/* ─── UTILS ─── */
+const m10 = (a,b) => (parseInt(a)+parseInt(b)) % 10;
+
+/* ─── MAIN ─── */
+function calcular() {
+    const raw  = document.getElementById('trisInput').value.trim();
+    const date = document.getElementById('dateInput').value;
+    if (raw.length !== 5 || isNaN(raw)) { alert('Ingresa los 5 dígitos del Tris.'); return; }
+
+    const data = raw.split('').map(Number);
+    const num  = parseInt(raw);
+
+    const gRes  = computeGatos(data);
+    const eRes  = computeEscalera(data, date);
+    const dRes  = computeDiamante(data);
+    const rRes  = computeRifa(date);
+    const mRes  = computeMulti(num);
+
+    renderGatos(gRes);
+    renderEscalera(data, date);
+    renderDiamante(data, dRes);
+    renderRifa(date);
+    renderMultiplicacion(num, raw);
+
+    // Pool of unique digits from all methods
+    const all = [...gRes.g1.flat(), ...gRes.g2.flat(), ...eRes, ...dRes, ...rRes, ...mRes];
+    methodDigitsPool = [...new Set(all)].filter(v => typeof v === 'number');
+
+    // Image header
+    document.getElementById('ch-number').textContent = raw;
+    document.getElementById('ch-date').textContent =
+        new Date(date+'T00:00:00').toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    document.getElementById('fecha-generacion').textContent = new Date().toLocaleString('es-MX');
+
+    // Reset generator output
+    document.getElementById('gen-results').innerHTML =
+        '<div class="gen-empty">Presiona "Generar" para ver tus números de suerte</div>';
+
+    const el = document.getElementById('results');
+    el.style.display = 'block';
+    el.classList.remove('visible');
+    void el.offsetWidth;
+    el.classList.add('visible');
+    setTimeout(() => el.scrollIntoView({behavior:'smooth',block:'start'}), 60);
+}
+
+/* ─── GATOS ─── */
+function buildGato(d, i0, i1, i2, i3) {
+    const g = [[0,0,0],[0,0,0],[0,0,0]];
+    g[0][0]=d[i0]; g[0][2]=d[i1]; g[2][0]=d[i2]; g[2][2]=d[i3];
+    g[0][1]=m10(g[0][0],g[0][2]); g[2][1]=m10(g[2][0],g[2][2]);
+    g[1][0]=m10(g[0][0],g[2][0]); g[1][2]=m10(g[0][2],g[2][2]);
+    g[1][1]=m10(g[0][1],g[2][1]);
+    return g;
+}
+function computeGatos(data) { return { g1:buildGato(data,0,1,3,4), g2:buildGato(data,1,2,3,4) }; }
+function renderGatos({g1,g2}) { drawGrid('gato1',g1); drawGrid('gato2',g2); }
+function drawGrid(id, matrix) {
+    const el = document.getElementById(id); el.innerHTML='';
+    matrix.forEach(row => row.forEach(n => {
+        const d=document.createElement('div'); d.className='cell'; d.textContent=n; el.appendChild(d);
+    }));
+}
+
+/* ─── ESCALERA ─── */
+function computeEscalera(data, dateStr) {
+    const day=new Date(dateStr+'T00:00:00').getDate();
+    let lvl=[...data, Math.floor(day/10), day%10];
+    const all=[...lvl];
+    while(lvl.length>1){ lvl=lvl.slice(0,-1).map((v,i)=>m10(v,lvl[i+1])); all.push(...lvl); }
+    return all;
+}
+function renderEscalera(data, dateStr) {
+    const day=new Date(dateStr+'T00:00:00').getDate();
+    let lvl=[...data, Math.floor(day/10), day%10];
+    const el=document.getElementById('escalera'); el.innerHTML='';
+    drawPRow(el, lvl);
+    while(lvl.length>1){ lvl=lvl.slice(0,-1).map((v,i)=>m10(v,lvl[i+1])); drawPRow(el,lvl,lvl.length===1); }
+}
+function drawPRow(container, numbers, isFinal=false) {
+    const row=document.createElement('div'); row.className='row'+(isFinal?' final-row':'');
+    numbers.forEach(n=>{ const c=document.createElement('div'); c.className='pyramid-cell'; c.textContent=n; row.appendChild(c); });
+    container.appendChild(row);
+}
+
+/* ─── DIAMANTE ─── */
+function computeDiamante(data) {
+    const [TL,TR,,BL,BR]=[data[0],data[1],data[2],data[3],data[4]];
+    return [TL,TR,BL,BR,(TL+TR+BL+BR)%10,(TL+TR)%10,(TL+BL)%10,(TR+BR)%10,(BL+BR)%10];
+}
+function renderDiamante(data, digs) {
+    const [TL,TR,BL,BR,center,armT,armL,armR,armB]=digs;
+    const map={
+        '0-0':{t:'d-corner',v:TL},'0-4':{t:'d-corner',v:TR},
+        '1-2':{t:'d-edge',v:armT},
+        '2-0':{t:'d-edge',v:armL},'2-2':{t:'d-center',v:center},'2-4':{t:'d-edge',v:armR},
+        '3-2':{t:'d-edge',v:armB},
+        '4-0':{t:'d-corner',v:BL},'4-4':{t:'d-corner',v:BR},
+    };
+    const wrap=document.getElementById('diamante'); wrap.innerHTML='';
+    const grid=document.createElement('div'); grid.className='diamond-grid';
+    for(let r=0;r<5;r++) for(let c=0;c<5;c++){
+        const key=`${r}-${c}`, div=document.createElement('div');
+        div.className=map[key]?`d-cell ${map[key].t}`:'d-cell d-empty';
+        if(map[key]) div.textContent=map[key].v;
+        grid.appendChild(div);
+    }
+    wrap.appendChild(grid);
+}
+
+/* ─── RIFA ─── */
+function computeRifa(dateStr) {
+    const digs=[];
+    [-1,0,1].forEach(off=>{
+        const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+off);
+        const base=d.getDate();
+        [base,(base+33)%100,(base+66)%100].forEach(n=>String(n).padStart(2,'0').split('').forEach(ch=>digs.push(+ch)));
+    });
+    return digs;
+}
+function renderRifa(dateStr) {
+    const el=document.getElementById('rifa-section'); el.innerHTML='';
+    const labels=['Ayer','Hoy','Mañana'];
+    [-1,0,1].forEach((off,i)=>{
+        const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+off);
+        const base=d.getDate(), pad=n=>String(n).padStart(2,'0');
+        const card=document.createElement('div');
+        card.className='rifa-card'+(off===0?' today':'');
+        card.innerHTML=`<div class="rifa-day">${labels[i]}</div>
+            <span class="rifa-num">${pad(base)}</span>
+            <span class="rifa-num">${pad((base+33)%100)}</span>
+            <span class="rifa-num">${pad((base+66)%100)}</span>`;
+        el.appendChild(card);
+    });
+}
+
+/* ─── MULTIPLICACIÓN ─── */
+function computeMulti(num) {
+    return [...String(num*333),...String(num*777)].map(Number);
+}
+function renderMultiplicacion(num, str) {
+    document.getElementById('label-333').textContent=`${str}  ×  333`;
+    document.getElementById('label-777').textContent=`${str}  ×  777`;
+    drawMultiRow('res-333', num*333);
+    drawMultiRow('res-777', num*777);
+}
+function drawMultiRow(id, number) {
+    const el=document.getElementById(id); el.innerHTML='';
+    const digits=String(number).split(''), len=digits.length;
+    const sep=()=>{ const s=document.createElement('div'); s.className='separator'; el.appendChild(s); };
+    const add=(val,good)=>{ const d=document.createElement('div'); d.className=good?'multi-cell hl':'lagging-cell'; d.textContent=val; el.appendChild(d); };
+    if(len===7){ add(digits[0],false); sep(); digits.slice(1,4).forEach(d=>add(d,true)); sep(); digits.slice(4,7).forEach(d=>add(d,true)); }
+    else if(len===8){ add(digits[0],false); sep(); digits.slice(1,4).forEach(d=>add(d,true)); sep(); digits.slice(4,7).forEach(d=>add(d,true)); sep(); add(digits[7],false); }
+    else { digits.forEach(d=>add(d,true)); }
+}
+
+/* ─── GENERADOR ─── */
+function generarNumeros() {
+    if(!methodDigitsPool.length){ alert('Primero ingresa un número y pulsa "Atraer Suerte".'); return; }
+    const n=activeCifras, res=[];
+    const nonZero=methodDigitsPool.filter(d=>d!==0);
+    const firstPool=nonZero.length?nonZero:methodDigitsPool;
+
+    // 2 from method digits
+    for(let i=0;i<2;i++){
+        let num=String(firstPool[Math.floor(Math.random()*firstPool.length)]);
+        for(let j=1;j<n;j++) num+=methodDigitsPool[Math.floor(Math.random()*methodDigitsPool.length)];
+        res.push({val:num,type:'from-method',tag:'✨ Del Método'});
+    }
+    // 2 random
+    for(let i=0;i<2;i++){
+        let num=String(1+Math.floor(Math.random()*9));
+        for(let j=1;j<n;j++) num+=Math.floor(Math.random()*10);
+        res.push({val:num,type:'random-pick',tag:'🎲 Aleatorio'});
     }
 
-    function calcular() {
-        const inputStr = document.getElementById('trisInput').value;
-        const dateInput = document.getElementById('dateInput').value;
+    const el=document.getElementById('gen-results'); el.innerHTML='';
+    res.forEach(r=>{
+        const div=document.createElement('div');
+        div.className=`gen-item ${r.type}`;
+        div.innerHTML=`<div class="gen-tag">${r.tag}</div><div class="gen-number">${r.val}</div>`;
+        el.appendChild(div);
+    });
+}
 
-        if (inputStr.length !== 5 || isNaN(inputStr)) {
-            alert("Por favor ingresa los 5 dígitos del Tris.");
-            return;
-        }
+/* ─── RECOMENDACIONES ─── */
+function toggleRecs() {
+    document.getElementById('recsBody').classList.toggle('open');
+    document.getElementById('recsBtn').classList.toggle('open');
+}
 
-        const data = inputStr.split('').map(Number);
-        const inputNum = parseInt(inputStr);
-
-        renderGatos(data);
-        renderEscalera(data, dateInput);
-        renderRifa(dateInput);
-        renderMultiplicacion(inputNum, inputStr);
-        
-        document.getElementById('fecha-generacion').innerText = new Date().toLocaleString();
-        document.getElementById('results').style.display = 'block';
-    }
-
-    // --- LÓGICA GATOS ---
-    function renderGatos(data) {
-        let g1 = Array(3).fill().map(() => Array(3).fill(0));
-        g1[0][0] = data[0]; g1[0][2] = data[1];
-        g1[2][0] = data[3]; g1[2][2] = data[4];
-        g1[0][1] = sumMod10(g1[0][2], g1[0][0]);
-        g1[2][1] = sumMod10(g1[2][2], g1[2][0]);
-        g1[1][0] = sumMod10(g1[0][0], g1[2][0]);
-        g1[1][2] = sumMod10(g1[0][2], g1[2][2]);
-        g1[1][1] = sumMod10(g1[0][1], g1[2][1]);
-        drawGrid('gato1', g1);
-
-        let g2 = Array(3).fill().map(() => Array(3).fill(0));
-        g2[0][0] = data[1]; g2[0][2] = data[2];
-        g2[2][0] = data[3]; g2[2][2] = data[4];
-        g2[0][1] = sumMod10(g2[0][2], g2[0][0]);
-        g2[2][1] = sumMod10(g2[2][2], g2[2][0]);
-        g2[1][0] = sumMod10(g2[0][0], g2[2][0]);
-        g2[1][2] = sumMod10(g2[0][2], g2[2][2]);
-        g2[1][1] = sumMod10(g2[0][1], g2[2][1]);
-        drawGrid('gato2', g2);
-    }
-
-    function drawGrid(elementId, matrix) {
-        const container = document.getElementById(elementId);
-        container.innerHTML = '';
-        matrix.forEach(row => {
-            row.forEach(num => {
-                const div = document.createElement('div');
-                div.className = 'cell';
-                div.textContent = num;
-                container.appendChild(div);
-            });
-        });
-    }
-
-    // --- LÓGICA ESCALERA ---
-    function renderEscalera(data, dateString) {
-        const dateObj = new Date(dateString + 'T00:00:00');
-        const day = dateObj.getDate();
-        const unDia = day % 10;
-        const decDia = Math.floor(day / 10);
-
-        let currentLevel = [...data, decDia, unDia]; 
-        const container = document.getElementById('escalera');
-        container.innerHTML = '';
-
-        drawRow(container, currentLevel);
-
-        while (currentLevel.length > 1) {
-            let nextLevel = [];
-            for (let i = 0; i < currentLevel.length - 1; i++) {
-                let sum = sumMod10(currentLevel[i], currentLevel[i+1]);
-                nextLevel.push(sum);
-            }
-            currentLevel = nextLevel;
-            let isFinal = currentLevel.length === 1;
-            drawRow(container, currentLevel, isFinal);
-        }
-    }
-
-    function drawRow(container, numbers, isFinal = false) {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'row' + (isFinal ? ' final-row' : '');
-        numbers.forEach(num => {
-            const cell = document.createElement('div');
-            cell.className = 'pyramid-cell';
-            cell.textContent = num;
-            rowDiv.appendChild(cell);
-        });
-        container.appendChild(rowDiv);
-    }
-
-    // --- LÓGICA RIFA ---
-    function renderRifa(dateString) {
-        const container = document.getElementById('rifa-section');
-        container.innerHTML = '';
-        const getDayFromOffset = (offset) => {
-            const d = new Date(dateString + 'T00:00:00');
-            d.setDate(d.getDate() + offset);
-            return d.getDate();
-        };
-        const offsets = [-1, 0, 1];
-        const labels = ["Ayer", "Hoy", "Mañana"];
-
-        offsets.forEach((offset, index) => {
-            const baseDay = getDayFromOffset(offset);
-            const n1 = baseDay;
-            const n2 = (baseDay + 33) % 100;
-            const n3 = (baseDay + 66) % 100;
-            const pad = (n) => n.toString().padStart(2, '0');
-
-            const card = document.createElement('div');
-            card.className = offset === 0 ? 'rifa-card today' : 'rifa-card';
-            
-            card.innerHTML = `
-                <div class="rifa-title">${labels[index]}</div>
-                <span class="rifa-num">${pad(n1)}</span>
-                <span class="rifa-num">${pad(n2)}</span>
-                <span class="rifa-num">${pad(n3)}</span>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    // --- LÓGICA MULTIPLICACIÓN ---
-    function renderMultiplicacion(inputNum, inputStr) {
-        document.getElementById('label-333').textContent = `${inputStr} X 333`;
-        document.getElementById('label-777').textContent = `${inputStr} X 777`;
-
-        const res333 = inputNum * 333;
-        const res777 = inputNum * 777;
-
-        drawSpecialMultiRow('res-333', res333);
-        drawSpecialMultiRow('res-777', res777);
-    }
-
-    function drawSpecialMultiRow(elementId, number) {
-        const container = document.getElementById(elementId);
-        container.innerHTML = '';
-        const digits = number.toString().split('');
-        const len = digits.length;
-
-        const addCell = (val, type) => {
-            const div = document.createElement('div');
-            div.textContent = val;
-            div.className = (type === 'good') ? 'multi-cell' : 'lagging-cell';
-            container.appendChild(div);
-        };
-        
-        const addSeparator = () => {
-            const sep = document.createElement('div');
-            sep.className = 'separator';
-            container.appendChild(sep);
-        };
-
-        if (len === 7) {
-            digits.slice(0, 3).forEach(d => addCell(d, 'good'));
-            addSeparator();
-            digits.slice(3, 6).forEach(d => addCell(d, 'good'));
-            addSeparator();
-            addCell(digits[6], 'lagging');
-        } else if (len === 8) {
-            addCell(digits[0], 'lagging');
-            addSeparator();
-            digits.slice(1, 4).forEach(d => addCell(d, 'good'));
-            addSeparator();
-            digits.slice(4, 7).forEach(d => addCell(d, 'good'));
-            addSeparator();
-            addCell(digits[7], 'lagging');
-        } else {
-            digits.forEach(d => addCell(d, 'good'));
-        }
-    }
-
-    function descargarImagen() {
-        const captureElement = document.getElementById('capture-area');
-        const btn = document.getElementById('btn-download');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '⏳ Generando...';
-        
-        html2canvas(captureElement, {
-            scale: 2,
-            backgroundColor: "#ffffff",
-            logging: false
-        }).then(canvas => {
-            const link = document.createElement('a');
-            const fecha = new Date().toISOString().slice(0,10);
-            link.download = `Suerte_Tris_${fecha}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-            btn.innerHTML = originalText;
-        }).catch(err => {
-            alert("Error al generar imagen");
-            btn.innerHTML = originalText;
-        });
-    }
+/* ─── DESCARGA ─── */
+function descargarImagen() {
+    const btn=document.getElementById('btn-download');
+    btn.textContent='⏳  Generando...'; btn.disabled=true;
+    html2canvas(document.getElementById('capture-area'),{
+        scale:2.5,
+        backgroundColor:currentTheme==='dark'?'#0c1f12':'#ffffff',
+        logging:false, useCORS:true, allowTaint:true
+    }).then(canvas=>{
+        const link=document.createElement('a');
+        const raw=document.getElementById('trisInput').value||'tris';
+        link.download=`SuerteTris_${raw}_${new Date().toISOString().slice(0,10)}.png`;
+        link.href=canvas.toDataURL('image/png'); link.click();
+        btn.innerHTML='📸 &nbsp;Guardar Amuleto como Imagen'; btn.disabled=false;
+    }).catch(()=>{ alert('Error al generar imagen'); btn.innerHTML='📸 &nbsp;Guardar Amuleto como Imagen'; btn.disabled=false; });
+}
 </script>
-
 </body>
 </html>
