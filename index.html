@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* ═══ THEME ═══ */
 :root{
@@ -44,7 +45,7 @@ body{
   font-family:'Nunito',sans-serif;background:var(--bg);
   background-image:radial-gradient(ellipse at 15% 5%,rgba(39,174,96,.07) 0,transparent 45%),
     radial-gradient(ellipse at 85% 90%,rgba(232,185,35,.05) 0,transparent 45%);
-  min-height:100vh;color:var(--tx);padding-bottom:66px;
+  min-height:100vh;color:var(--tx);padding-bottom:90px;
   overscroll-behavior-y:none;transition:background .3s,color .3s;
 }
 .wrap{max-width:520px;margin:0 auto;padding:0 12px}
@@ -67,7 +68,7 @@ body{
 }
 
 /* ═══ TABS ═══ */
-.tab-panel{display:none;padding:0 12px 20px;max-width:520px;margin:0 auto}
+.tab-panel{display:none;padding:0 12px 28px;max-width:520px;margin:0 auto}
 .tab-panel.active{display:block}
 
 /* ═══ BOTTOM NAV ═══ */
@@ -476,6 +477,99 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1)
 .mt8{margin-top:8px}
 .mt12{margin-top:12px}
 .flex-gap{display:flex;gap:8px}
+
+/* ═══ FETCH RESULT BUTTON ═══ */
+.btn-fetch{
+  width:100%;padding:10px;margin-top:8px;
+  font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:800;
+  background:transparent;border:1.5px dashed var(--green);border-radius:10px;
+  color:var(--green);cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn-fetch:hover{background:rgba(39,174,96,.1)}
+.btn-fetch.loading{opacity:.6;pointer-events:none}
+
+/* ═══ SHARE GRID ═══ */
+.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.btn-share{
+  padding:11px 6px;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:800;
+  border:none;border-radius:12px;cursor:pointer;transition:transform .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;color:#fff;
+}
+.btn-share:active{transform:scale(.96)}
+.btn-share.wa{background:linear-gradient(135deg,#128c7e,#25d366);box-shadow:0 3px 12px rgba(37,211,102,.3)}
+.btn-share.tg{background:linear-gradient(135deg,#0077b5,#29a8e8);box-shadow:0 3px 12px rgba(41,168,232,.3)}
+.btn-share.fb{background:linear-gradient(135deg,#1565c0,#1877f2);box-shadow:0 3px 12px rgba(24,119,242,.3)}
+.btn-share.dl{background:linear-gradient(135deg,#4d4d4d,#1a1a1a);box-shadow:0 3px 12px rgba(0,0,0,.4);border:1px solid var(--bd)}
+
+/* ═══ ANIMATED SHARE WIDGET ═══ */
+.share-anim-wrap{
+  display:none;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#071a0e,#0f2916,#1a5c2a);
+  border:2px solid var(--gold-d);border-radius:16px;
+  padding:20px 16px;text-align:center;margin-bottom:10px;
+}
+.share-anim-wrap.visible{display:block;animation:fadeUp .4s ease both}
+.sparkle{position:absolute;border-radius:50%;animation:sparkleAnim 1.5s ease-in-out infinite}
+.sparkle:nth-child(1){width:6px;height:6px;background:var(--gold);top:12%;left:8%;animation-delay:0s}
+.sparkle:nth-child(2){width:4px;height:4px;background:var(--green);top:20%;right:12%;animation-delay:.3s}
+.sparkle:nth-child(3){width:5px;height:5px;background:var(--gold-l);bottom:18%;left:15%;animation-delay:.6s}
+.sparkle:nth-child(4){width:3px;height:3px;background:var(--green);bottom:25%;right:10%;animation-delay:.9s}
+@keyframes sparkleAnim{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1.3)}}
+.sa-clover{font-size:2rem;animation:float 2.5s ease-in-out infinite}
+.sa-num{font-family:'Cinzel',serif;font-size:2.2rem;font-weight:900;color:var(--gold);letter-spacing:6px;text-shadow:0 0 20px rgba(232,185,35,.7);margin:4px 0}
+.sa-sub{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:12px}
+.sa-pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px}
+.sa-pill{padding:4px 10px;border-radius:20px;font-size:.65rem;font-weight:800;letter-spacing:.5px}
+.sa-pill.g{background:rgba(232,185,35,.2);color:var(--gold);border:1px solid rgba(232,185,35,.35)}
+.sa-pill.gr{background:rgba(39,174,96,.15);color:var(--green);border:1px solid rgba(39,174,96,.3)}
+.sa-brand{font-size:.55rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:8px}
+.btn-copy-anim{
+  width:100%;padding:9px;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:800;
+  background:var(--gold);color:#0a1f05;border:none;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+
+/* ═══ AI PREDICTION ═══ */
+.ai-card{background:var(--bgc);border:1px solid rgba(147,51,234,.3);border-radius:var(--radius);padding:clamp(14px,4vw,18px) clamp(12px,3.5vw,16px);margin-bottom:12px;box-shadow:0 4px 24px rgba(147,51,234,.15)}
+.ai-title{font-family:'Cinzel',serif;font-size:clamp(.7rem,2.3vw,.84rem);font-weight:700;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid rgba(147,51,234,.2);color:#a855f7}
+.btn-ai{
+  width:100%;padding:13px;font-family:'Cinzel',serif;
+  font-size:clamp(.78rem,2.6vw,.9rem);font-weight:700;letter-spacing:1.5px;
+  background:linear-gradient(135deg,#4c1d95,#7c3aed,#a855f7);
+  color:#fff;border:none;border-radius:10px;cursor:pointer;
+  box-shadow:0 4px 18px rgba(168,85,247,.4);transition:transform .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:12px;
+}
+.btn-ai:active{transform:scale(.97)}
+.btn-ai:disabled{opacity:.5;pointer-events:none}
+.ai-result{background:rgba(147,51,234,.07);border:1px solid rgba(147,51,234,.2);border-radius:10px;padding:14px;display:none}
+.ai-result.visible{display:block;animation:fadeUp .4s ease both}
+.ai-nums{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.ai-num-chip{
+  padding:8px 16px;background:linear-gradient(135deg,rgba(147,51,234,.2),rgba(168,85,247,.15));
+  border:1.5px solid rgba(168,85,247,.4);border-radius:10px;
+  font-family:'Cinzel',serif;font-size:1.2rem;font-weight:900;color:#c084fc;
+  letter-spacing:3px;
+}
+.ai-analysis{font-size:.7rem;color:var(--ts);line-height:1.7;margin-top:8px}
+.ai-thinking{display:flex;align-items:center;gap:8px;padding:12px;font-size:.75rem;color:#a855f7;font-weight:700}
+.ai-dots{display:flex;gap:4px}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:#a855f7;animation:bounce .8s ease-in-out infinite}
+.ai-dot:nth-child(2){animation-delay:.15s}
+.ai-dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ═══ EXPORT BUTTONS (historial) ═══ */
+.export-row{display:flex;gap:8px;margin-bottom:12px}
+.btn-export{
+  flex:1;padding:9px 6px;font-family:'Nunito',sans-serif;font-size:.75rem;font-weight:800;
+  background:var(--bgi);border:1px solid var(--bd);border-radius:8px;
+  color:var(--ts);cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.btn-export:hover{border-color:var(--gold);color:var(--gold)}
 </style>
 </head>
 <body>
@@ -510,16 +604,30 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1)
         </div>
       </div>
       <button class="btn-gold" onclick="calcular()">⚡ &nbsp;ATRAER SUERTE</button>
+      <button class="btn-fetch" id="btn-fetch" onclick="fetchUltimoResultado()">🌐 &nbsp;Consultar Último Resultado Automáticamente</button>
     </div>
 
     <div id="results">
 
-      <button class="btn-wa" id="btn-wa" onclick="compartirWA()">
-        💚 &nbsp;Compartir en WhatsApp
-      </button>
-      <button class="btn-outline" id="btn-download" onclick="descargarImagen()" style="margin-bottom:12px">
-        📸 &nbsp;Guardar como Imagen
-      </button>
+      <!-- SHARE GRID -->
+      <div class="share-grid">
+        <button class="btn-share wa" onclick="compartirRed('wa')">💚 WhatsApp</button>
+        <button class="btn-share tg" onclick="compartirRed('tg')">✈️ Telegram</button>
+        <button class="btn-share fb" onclick="compartirRed('fb')">📘 Facebook</button>
+        <button class="btn-share dl" onclick="descargarImagen()">📸 Guardar</button>
+      </div>
+
+      <!-- ANIMATED SHARE WIDGET -->
+      <div class="share-anim-wrap" id="share-anim">
+        <div class="sparkle"></div><div class="sparkle"></div>
+        <div class="sparkle"></div><div class="sparkle"></div>
+        <span class="sa-clover">🍀</span>
+        <div class="sa-num" id="sa-num">—</div>
+        <div class="sa-sub">Suerte Tris · Análisis de Suerte</div>
+        <div class="sa-pills" id="sa-pills"></div>
+        <div class="sa-brand">DanKing92 · Suerte Tris App</div>
+        <button class="btn-copy-anim" onclick="copiarWidgetImagen()">📋 &nbsp;Copiar / Compartir Widget</button>
+      </div>
 
       <!-- CAPTURE AREA -->
       <div id="capture-area">
@@ -626,6 +734,18 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1)
         </div>
       </div>
 
+      <!-- AI PREDICTION -->
+      <div class="ai-card mt12">
+        <div class="ai-title">🤖 Predicción con IA</div>
+        <p style="font-size:.68rem;color:var(--ts);margin-bottom:12px;line-height:1.5">
+          Analiza tu historial y los resultados actuales con Inteligencia Artificial para sugerir combinaciones basadas en patrones estadísticos.
+        </p>
+        <button class="btn-ai" id="btn-ai" onclick="predecirConIA()">
+          🔮 &nbsp;GENERAR PREDICCIÓN IA
+        </button>
+        <div class="ai-result" id="ai-result"></div>
+      </div>
+
       <!-- MEJORAS -->
       <div class="recs-card mt12">
         <button class="recs-toggle" id="recsBtn" onclick="toggleRecs()">
@@ -652,8 +772,12 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1)
       <h2>📋 Historial</h2>
       <p>Tus últimos análisis guardados</p>
     </div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-      <button class="btn-danger" onclick="clearHistory()">🗑 Limpiar todo</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px">
+      <div class="export-row" style="flex:1;margin-bottom:0">
+        <button class="btn-export" onclick="exportarPDF()">📄 PDF</button>
+        <button class="btn-export" onclick="exportarCSV()">📊 CSV</button>
+      </div>
+      <button class="btn-danger" onclick="clearHistory()">🗑 Limpiar</button>
     </div>
     <div id="hist-list"></div>
   </div>
@@ -862,6 +986,11 @@ function calcular() {
   });
 
   document.getElementById('gen-results').innerHTML = '<div class="gen-empty">Presiona "Generar" para ver tus números</div>';
+  // Show animated share widget
+  mostrarWidget(raw, red, dRes[4], eRes[eRes.length-1]);
+  // Reset AI result
+  const aiR=document.getElementById('ai-result');
+  aiR.style.display='none'; aiR.classList.remove('visible');
 
   const el = document.getElementById('results');
   el.style.display = 'block'; el.classList.remove('visible');
@@ -1163,11 +1292,11 @@ self.addEventListener('fetch',e=>e.respondWith(
 
 async function compartirWA(){
   const raw=document.getElementById('trisInput').value.trim();
-  const red=document.getElementById('red-meaning').textContent;
-  const text=`🍀 *Suerte Tris* — Análisis del ${raw}\n\n${red.slice(0,80)}\n\n✨ Generado con _Suerte Tris_ por DanKing92`;
+  const red=document.getElementById('red-meaning')?.textContent||'';
+  const text=`🍀 *Suerte Tris* — Análisis del ${raw}\n\n${red.slice(0,80)}\n\n✨ _Generado con Suerte Tris por DanKing92_`;
   try{
-    const canvas=await html2canvas(document.getElementById('capture-area'),{scale:2,backgroundColor:currentTheme==='dark'?'#0c1f12':'#ffffff',logging:false,useCORS:true});
-    const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
+    const canvas=await html2canvas(document.getElementById('capture-area'),{scale:2,backgroundColor:currentTheme==='dark'?'#0c1f12':'#fff',logging:false,useCORS:true});
+    const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
     const file=new File([blob],'suerte-tris.png',{type:'image/png'});
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
       await navigator.share({title:'Suerte Tris',text,files:[file]});return;
@@ -1177,11 +1306,95 @@ async function compartirWA(){
 }
 
 /* ══════════════════════════════════
+   FETCH ÚLTIMO RESULTADO TRIS
+══════════════════════════════════ */
+async function fetchUltimoResultado(){
+  const btn=document.getElementById('btn-fetch');
+  btn.classList.add('loading');
+  btn.textContent='⏳  Consultando...';
+  try{
+    const proxies=[
+      'https://api.allorigins.win/raw?url='+encodeURIComponent('https://www.lotenal.gob.mx/boletines/tris.json'),
+      'https://corsproxy.io/?'+encodeURIComponent('https://www.lotenal.gob.mx/boletines/tris.json'),
+    ];
+    let found=false;
+    for(const url of proxies){
+      try{
+        const res=await fetch(url,{signal:AbortSignal.timeout(6000)});
+        if(!res.ok)continue;
+        const text=await res.text();
+        const match=text.match(/\b(\d{5})\b/);
+        if(match){
+          document.getElementById('trisInput').value=match[1];
+          btn.textContent=`✅ Resultado: ${match[1]}`;
+          found=true;break;
+        }
+      }catch(e){continue;}
+    }
+    if(!found){
+      btn.textContent='⚠️ No disponible — ingresa manualmente';
+      setTimeout(()=>{btn.textContent='🌐  Consultar Último Resultado';btn.classList.remove('loading');},3500);
+      return;
+    }
+  }catch(e){
+    btn.textContent='❌ Error de conexión';
+    setTimeout(()=>{btn.textContent='🌐  Consultar Último Resultado';btn.classList.remove('loading');},3500);
+    return;
+  }
+  btn.classList.remove('loading');
+  setTimeout(()=>{btn.textContent='🌐  Consultar Último Resultado';},4000);
+}
+
+/* ══════════════════════════════════
+   MULTI-PLATFORM SHARE
+══════════════════════════════════ */
+async function compartirRed(red){
+  const raw=document.getElementById('trisInput').value.trim();
+  const esencia=document.getElementById('red-meaning')?.textContent?.slice(0,60)||'';
+  const text=`🍀 *Suerte Tris* — Análisis del número ${raw}\n\n${esencia}\n\n✨ _Generado con Suerte Tris por DanKing92_`;
+  if(red==='wa'){
+    try{
+      const canvas=await html2canvas(document.getElementById('capture-area'),{scale:2,backgroundColor:currentTheme==='dark'?'#0c1f12':'#fff',logging:false,useCORS:true});
+      const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+      const file=new File([blob],'suerte-tris.png',{type:'image/png'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({title:'Suerte Tris',text,files:[file]});return;}
+    }catch(e){}
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');
+  }else if(red==='tg'){
+    window.open(`https://t.me/share/url?url=${encodeURIComponent('https://gdanbber.github.io')}&text=${encodeURIComponent(text)}`,'_blank');
+  }else if(red==='fb'){
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://gdanbber.github.io')}&quote=${encodeURIComponent(text)}`,'_blank');
+  }
+}
+
+/* ══════════════════════════════════
+   ANIMATED WIDGET
+══════════════════════════════════ */
+function mostrarWidget(raw,red,diam,escFin){
+  document.getElementById('sa-num').textContent=raw;
+  const pills=document.getElementById('sa-pills');
+  pills.innerHTML=[
+    {l:`Esencia: ${red.final}`,c:'g'},
+    {l:`Escalera: ${escFin}`,c:'g'},
+    {l:`Diamante: ${diam}`,c:'gr'},
+  ].map(p=>`<span class="sa-pill ${p.c}">${p.l}</span>`).join('');
+  document.getElementById('share-anim').classList.add('visible');
+}
+async function copiarWidgetImagen(){
+  try{
+    const canvas=await html2canvas(document.getElementById('share-anim'),{scale:3,backgroundColor:'#071a0e',logging:false});
+    const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+    const file=new File([blob],'suerte-widget.png',{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({title:'Suerte Tris',files:[file]});return;}
+    const link=document.createElement('a');link.download=`SuerteWidget_${new Date().toISOString().slice(0,10)}.png`;
+    link.href=canvas.toDataURL('image/png');link.click();
+  }catch(e){alert('Error al capturar widget');}
+}
+
+/* ══════════════════════════════════
    DOWNLOAD IMAGE
 ══════════════════════════════════ */
 function descargarImagen(){
-  const btn=document.getElementById('btn-download');
-  btn.textContent='⏳ Generando...';btn.disabled=true;
   html2canvas(document.getElementById('capture-area'),{
     scale:2.5,backgroundColor:currentTheme==='dark'?'#0c1f12':'#ffffff',
     logging:false,useCORS:true,allowTaint:true
@@ -1189,8 +1402,96 @@ function descargarImagen(){
     const link=document.createElement('a');
     link.download=`SuerteTris_${lastTrisNum||'amuleto'}_${new Date().toISOString().slice(0,10)}.png`;
     link.href=canvas.toDataURL('image/png');link.click();
-    btn.innerHTML='📸 &nbsp;Guardar como Imagen';btn.disabled=false;
-  }).catch(()=>{alert('Error al generar imagen');btn.innerHTML='📸 &nbsp;Guardar como Imagen';btn.disabled=false;});
+  }).catch(()=>alert('Error al generar imagen'));
+}
+
+/* ══════════════════════════════════
+   AI PREDICTION
+══════════════════════════════════ */
+async function predecirConIA(){
+  const raw=document.getElementById('trisInput').value.trim();
+  const h=getHistory();
+  if(!raw&&!h.length){alert('Ingresa un número o genera historial primero.');return;}
+  const btn=document.getElementById('btn-ai');
+  const res=document.getElementById('ai-result');
+  btn.disabled=true;
+  res.style.display='block';res.classList.remove('visible');
+  res.innerHTML=`<div class="ai-thinking"><div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>IA analizando patrones...</span></div>`;
+  const histRes=h.slice(0,10).map(e=>`${e.trisNum}(esencia:${e.esencia},esc:${e.escFinal})`).join(', ');
+  const metodo=document.getElementById('red-meaning')?.textContent||'';
+  const prompt=`Eres un asistente de numerología para el juego "Tris" de México (5 dígitos del 0-9).
+Historial: ${histRes||'sin historial'}.
+Número actual: ${raw||'no especificado'}. Reducción: ${metodo.slice(0,80)}.
+Sugiere 4 combinaciones de 5 dígitos basadas en patrones numerológicos.
+Responde SOLO en JSON sin markdown: {"nums":["12345","67890","11111","22222"],"analisis":"Explicación máx 90 palabras en español."}`;
+  try{
+    const apiRes=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await apiRes.json();
+    const text=(data.content||[]).map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(text);
+    const nums=(parsed.nums||[]).slice(0,4);
+    res.innerHTML=`
+      <p style="font-size:.65rem;color:#a855f7;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🔮 Combinaciones sugeridas por IA:</p>
+      <div class="ai-nums">${nums.map(n=>`<div class="ai-num-chip">${n}</div>`).join('')}</div>
+      <div class="ai-analysis">📊 <strong style="color:#a855f7">Análisis:</strong> ${parsed.analisis||''}</div>
+      <p style="font-size:.55rem;color:var(--ts);margin-top:8px;opacity:.7">⚠️ Sugerencia recreativa basada en numerología.</p>`;
+    res.classList.add('visible');
+  }catch(e){
+    res.innerHTML=`<p style="font-size:.72rem;color:#e74c3c;padding:8px">❌ No se pudo conectar con IA. Intenta de nuevo.</p>`;
+  }
+  btn.disabled=false;
+}
+
+/* ══════════════════════════════════
+   EXPORT PDF
+══════════════════════════════════ */
+async function exportarPDF(){
+  const h=getHistory();
+  if(!h.length){alert('No hay historial para exportar.');return;}
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const grn=[15,41,22],gld=[232,185,35];
+    doc.setFillColor(...grn);doc.rect(0,0,210,28,'F');
+    doc.setTextColor(...gld);doc.setFontSize(16);doc.setFont('helvetica','bold');
+    doc.text('SUERTE TRIS — Historial de Análisis',105,11,{align:'center'});
+    doc.setFontSize(7.5);doc.setTextColor(180,200,185);
+    doc.text(`Exportado: ${new Date().toLocaleDateString('es-MX')} · DanKing92 · Ayudado por Claude IA`,105,20,{align:'center'});
+    let y=34;
+    h.forEach((e,i)=>{
+      if(y>265){doc.addPage();y=14;}
+      doc.setFillColor(20,55,30);doc.roundedRect(10,y,190,22,2,2,'F');
+      doc.setTextColor(...gld);doc.setFont('helvetica','bold');doc.setFontSize(11);
+      doc.text(`#${i+1} · ${e.trisNum}`,14,y+7);
+      doc.setTextColor(180,200,185);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+      doc.text(`Fecha: ${e.savedAt}`,14,y+13);
+      doc.text(`Esencia:${e.esencia} · Escalera:${e.escFinal} · Diamante:${e.diamCen} · Gato1:${e.gatoC1} · Gato2:${e.gatoC2}`,14,y+19);
+      y+=26;
+    });
+    doc.setFillColor(...grn);doc.rect(0,280,210,17,'F');
+    doc.setTextColor(...gld);doc.setFontSize(7);
+    doc.text('Suerte Tris · Herramienta recreativa · No garantiza premios · Juega con responsabilidad',105,289,{align:'center'});
+    doc.save(`SuerteTris_Historial_${new Date().toISOString().slice(0,10)}.pdf`);
+  }catch(e){alert('Error PDF: '+e.message);}
+}
+
+/* ══════════════════════════════════
+   EXPORT CSV
+══════════════════════════════════ */
+function exportarCSV(){
+  const h=getHistory();
+  if(!h.length){alert('No hay historial para exportar.');return;}
+  const header='Numero,Fecha,Guardado,Esencia,Escalera,Diamante,Gato1,Gato2';
+  const rows=h.map(e=>`${e.trisNum},${e.calcDate},"${e.savedAt}",${e.esencia},${e.escFinal},${e.diamCen},${e.gatoC1},${e.gatoC2}`);
+  const csv=[header,...rows].join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const link=document.createElement('a');
+  link.href=URL.createObjectURL(blob);
+  link.download=`SuerteTris_Historial_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
 }
 
 /* ══════════════════════════════════
