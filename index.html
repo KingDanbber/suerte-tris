@@ -1,725 +1,1545 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Suerte Tris</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍀</text></svg>">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Suerte Tris</title>
+<link id="app-manifest" rel="manifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e8b923">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍀</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍀</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-/* ── THEME TOKENS ── */
-:root {
-    --gold:       #e8b923;
-    --gold-light: #f5d76e;
-    --gold-dim:   #7a5f0d;
-    --green-hi:   #27ae60;
-    --radius:     14px;
-    --glow-gold:  0 0 18px rgba(232,185,35,0.4);
-    --glow-green: 0 0 16px rgba(39,174,96,0.35);
-    --cell: clamp(36px, 10.8vw, 52px);
+/* ═══ THEME ═══ */
+:root{
+  --gold:#e8b923;--gold-l:#f5d76e;--gold-d:#7a5f0d;
+  --green:#27ae60;--radius:14px;
+  --glow-g:0 0 18px rgba(232,185,35,.4);
+  --glow-gr:0 0 16px rgba(39,174,96,.35);
+  --cell:clamp(36px,10.5vw,50px);
 }
-[data-theme="dark"] {
-    --bg:         #060f09;
-    --bg-card:    #0c1f12;
-    --bg-inp:     #0f2916;
-    --green-mid:  #1a5c2a;
-    --text:       #d4edda;
-    --text-sub:   #7a9e85;
-    --border:     rgba(232,185,35,0.22);
-    --border-sub: rgba(255,255,255,0.06);
-    --shadow:     0 6px 28px rgba(0,0,0,0.55);
-    --py-bg:      #1a5c2a;
-    --py-fg:      #d4edda;
+[data-theme="dark"]{
+  --bg:#060f09;--bgc:#0c1f12;--bgi:#0f2916;
+  --gm:#1a5c2a;--tx:#d4edda;--ts:#7a9e85;
+  --bd:rgba(232,185,35,.22);--bds:rgba(255,255,255,.06);
+  --sh:0 6px 28px rgba(0,0,0,.55);
+  --pyb:#1a5c2a;--pyf:#d4edda;
 }
-[data-theme="light"] {
-    --bg:         #eaf5ec;
-    --bg-card:    #ffffff;
-    --bg-inp:     #f2f9f4;
-    --green-mid:  #1e8449;
-    --text:       #0f2916;
-    --text-sub:   #4d7a5a;
-    --border:     rgba(20,90,40,0.2);
-    --border-sub: rgba(0,0,0,0.07);
-    --shadow:     0 4px 20px rgba(0,0,0,0.1);
-    --py-bg:      #1e8449;
-    --py-fg:      #ffffff;
+[data-theme="light"]{
+  --bg:#eaf5ec;--bgc:#fff;--bgi:#f2f9f4;
+  --gm:#1e8449;--tx:#0f2916;--ts:#4d7a5a;
+  --bd:rgba(20,90,40,.2);--bds:rgba(0,0,0,.07);
+  --sh:0 4px 20px rgba(0,0,0,.1);
+  --pyb:#1e8449;--pyf:#fff;
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Nunito',sans-serif;background:var(--bg);
+  background-image:radial-gradient(ellipse at 15% 5%,rgba(39,174,96,.07) 0,transparent 45%),
+    radial-gradient(ellipse at 85% 90%,rgba(232,185,35,.05) 0,transparent 45%);
+  min-height:100vh;color:var(--tx);padding-bottom:66px;
+  overscroll-behavior-y:none;transition:background .3s,color .3s;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 12px}
 
-/* ── RESET ── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-
-body {
-    font-family:'Nunito',sans-serif;
-    background:var(--bg);
-    background-image:
-        radial-gradient(ellipse at 15% 5%, rgba(39,174,96,0.07) 0%, transparent 45%),
-        radial-gradient(ellipse at 85% 90%, rgba(232,185,35,0.05) 0%, transparent 45%);
-    min-height:100vh;
-    color:var(--text);
-    padding:0 0 48px;
-    overscroll-behavior-y:none;
-    transition:background .3s,color .3s;
+/* ═══ TOP BAR ═══ */
+.top-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 12px 0;max-width:520px;margin:0 auto;
 }
-.wrap { max-width:520px; margin:0 auto; padding:0 12px; }
-
-/* ── THEME BAR ── */
-.theme-bar { display:flex; justify-content:flex-end; padding:12px 12px 0; max-width:520px; margin:0 auto; }
-.theme-toggle {
-    background:var(--bg-card); border:1px solid var(--border);
-    border-radius:50px; padding:7px 14px;
-    font-family:'Nunito',sans-serif; font-size:0.73rem; font-weight:800;
-    color:var(--text-sub); cursor:pointer; display:flex; align-items:center; gap:6px;
-    transition:all .2s; letter-spacing:.5px;
+.theme-btn{
+  background:var(--bgc);border:1px solid var(--bd);border-radius:50px;
+  padding:6px 12px;font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:800;
+  color:var(--ts);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s;
 }
-.theme-toggle:hover { border-color:var(--gold); color:var(--gold); }
-
-/* ── HEADER ── */
-.app-header { text-align:center; padding:18px 16px 20px; }
-.clover-icon {
-    font-size:clamp(2.2rem,8vw,3rem); display:block; line-height:1.2;
-    filter:drop-shadow(0 0 14px rgba(39,174,96,0.65));
-    animation:float 3.2s ease-in-out infinite;
-}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.app-title {
-    font-family:'Cinzel',serif; font-size:clamp(1.6rem,7vw,2.2rem); font-weight:900;
-    letter-spacing:clamp(2px,1vw,5px);
-    background:linear-gradient(135deg,var(--gold-light) 0%,var(--gold) 55%,#c9930a 100%);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    margin-top:4px; line-height:1.1;
-}
-.app-tagline { font-size:clamp(0.58rem,2vw,0.7rem); color:var(--text-sub); letter-spacing:2px; text-transform:uppercase; margin-top:5px; }
-
-/* ── INPUT CARD ── */
-.input-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:14px; box-shadow:var(--shadow); }
-.input-row { display:flex; gap:10px; margin-bottom:12px; }
-.input-wrap { flex:1; min-width:0; }
-.input-label { display:block; font-size:.62rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:800; margin-bottom:5px; }
-input[type="text"],input[type="date"] {
-    width:100%; padding:11px 10px;
-    font-family:'Nunito',sans-serif; font-size:clamp(.9rem,3.2vw,1.05rem); font-weight:800;
-    background:var(--bg-inp); border:1.5px solid var(--border); border-radius:10px;
-    color:var(--gold); outline:none; text-align:center; letter-spacing:2px;
-    transition:border-color .2s,box-shadow .2s; -webkit-appearance:none;
-}
-input[type="text"]::placeholder { color:var(--text-sub); letter-spacing:0; font-size:.72rem; font-weight:600; }
-input[type="text"]:focus,input[type="date"]:focus { border-color:var(--gold); box-shadow:var(--glow-gold); }
-input[type="date"] { letter-spacing:0; }
-input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(.6) sepia(1) hue-rotate(15deg) brightness(.9); cursor:pointer; }
-.btn-generate {
-    width:100%; padding:14px;
-    font-family:'Cinzel',serif; font-size:clamp(.83rem,3vw,.98rem); font-weight:700; letter-spacing:2px;
-    background:linear-gradient(135deg,#c9930a 0%,var(--gold) 50%,#f5d76e 100%);
-    color:#0a1f05; border:none; border-radius:10px; cursor:pointer;
-    box-shadow:0 4px 18px rgba(232,185,35,.45); transition:transform .15s,box-shadow .15s;
-    display:flex; align-items:center; justify-content:center; gap:8px;
-}
-.btn-generate:active { transform:scale(.97); }
-
-/* ── RESULTS ── */
-#results { display:none; }
-#results.visible { display:block; animation:fadeUp .4s ease both; }
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-
-.btn-download {
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    width:100%; padding:12px; margin-bottom:14px;
-    font-family:'Nunito',sans-serif; font-size:.87rem; font-weight:800;
-    background:transparent; border:1.5px solid var(--green-hi); border-radius:50px;
-    color:var(--green-hi); cursor:pointer; transition:background .2s,box-shadow .2s;
-}
-.btn-download:hover { background:rgba(39,174,96,.1); box-shadow:var(--glow-green); }
-
-/* ── CAPTURE HEADER ── */
-.capture-header {
-    background:linear-gradient(135deg,#0f2916 0%,#1a5c2a 100%);
-    border-radius:10px 10px 0 0; padding:14px 16px 12px; text-align:center;
-    border-bottom:2px solid var(--gold-dim);
-}
-[data-theme="light"] .capture-header { background:linear-gradient(135deg,#145a32 0%,#1e8449 100%); }
-.ch-label  { font-size:.58rem; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; margin-bottom:3px; }
-.ch-number { font-family:'Cinzel',serif; font-size:clamp(1.5rem,6vw,2rem); font-weight:900; color:var(--gold); letter-spacing:6px; text-shadow:0 0 20px rgba(232,185,35,.5); }
-.ch-date   { font-size:.63rem; color:rgba(255,255,255,.4); margin-top:3px; letter-spacing:1px; }
-
-/* ── SECTION CARD ── */
-.section-card {
-    background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
-    padding:clamp(14px,4vw,20px) clamp(12px,3.5vw,18px); margin-bottom:12px;
-    box-shadow:var(--shadow); overflow:hidden;
-}
-.section-card.no-top-r { border-top-left-radius:0; border-top-right-radius:0; margin-bottom:12px; border-top:none; }
-.section-title {
-    font-family:'Cinzel',serif; font-size:clamp(.72rem,2.4vw,.86rem); font-weight:700;
-    letter-spacing:2px; color:var(--gold); text-transform:uppercase;
-    display:flex; align-items:center; gap:8px;
-    margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border);
+.theme-btn:hover{border-color:var(--gold);color:var(--gold)}
+#install-btn{
+  display:none;background:var(--gold);border:none;border-radius:50px;
+  padding:6px 14px;font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:800;
+  color:#0a1f05;cursor:pointer;align-items:center;gap:5px;
 }
 
-/* ── GATOS (responsive, never overflow) ── */
-.gatos-row { display:flex; justify-content:center; gap:clamp(8px,3.5vw,20px); align-items:flex-start; }
-.gato-block { text-align:center; flex:0 0 auto; }
-.gato-label { font-size:clamp(.58rem,1.9vw,.68rem); letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); margin-bottom:6px; font-weight:800; }
-.grid-3x3 {
-    display:grid; grid-template-columns:repeat(3,var(--cell));
-    gap:clamp(2px,.6vw,4px); background:var(--gold-dim);
-    padding:clamp(2px,.6vw,4px); border-radius:10px; box-shadow:var(--glow-gold);
+/* ═══ TABS ═══ */
+.tab-panel{display:none;padding:0 12px 20px;max-width:520px;margin:0 auto}
+.tab-panel.active{display:block}
+
+/* ═══ BOTTOM NAV ═══ */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;height:62px;
+  background:var(--bgc);border-top:1px solid var(--bd);
+  display:flex;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.3);
 }
-.cell {
-    width:var(--cell); height:var(--cell); background:var(--bg-inp);
-    display:flex; align-items:center; justify-content:center;
-    font-size:clamp(1.05rem,3.8vw,1.4rem); font-weight:900; color:var(--gold-light);
-    border-radius:clamp(4px,1.2vw,7px);
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;border:none;background:transparent;color:var(--ts);
+  font-family:'Nunito',sans-serif;font-size:clamp(.48rem,.55rem+.1vw,.58rem);
+  font-weight:800;cursor:pointer;transition:color .2s;padding:6px 2px;
+  letter-spacing:.2px;
+}
+.nav-btn .ni{font-size:1.2rem;line-height:1}
+.nav-btn.active{color:var(--gold)}
+.nav-btn.active .ni{filter:drop-shadow(0 0 5px rgba(232,185,35,.6))}
+
+/* ═══ HEADER ═══ */
+.app-header{text-align:center;padding:14px 16px 18px}
+.clover{
+  font-size:clamp(2rem,7.5vw,2.8rem);display:block;line-height:1.2;
+  filter:drop-shadow(0 0 14px rgba(39,174,96,.65));
+  animation:float 3.2s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.app-title{
+  font-family:'Cinzel',serif;font-size:clamp(1.5rem,6.5vw,2rem);font-weight:900;
+  letter-spacing:clamp(2px,1vw,5px);
+  background:linear-gradient(135deg,var(--gold-l) 0%,var(--gold) 55%,#c9930a 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-top:4px;line-height:1.1;
+}
+.app-tagline{font-size:clamp(.56rem,1.9vw,.68rem);color:var(--ts);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+
+/* ═══ CARDS & SECTIONS ═══ */
+.card{
+  background:var(--bgc);border:1px solid var(--bd);border-radius:var(--radius);
+  padding:clamp(14px,4vw,18px) clamp(12px,3.5vw,16px);
+  margin-bottom:12px;box-shadow:var(--sh);
+}
+.card.no-top{border-top-left-radius:0;border-top-right-radius:0;border-top:none;margin-bottom:12px}
+.sec-title{
+  font-family:'Cinzel',serif;font-size:clamp(.7rem,2.3vw,.84rem);font-weight:700;
+  letter-spacing:2px;color:var(--gold);text-transform:uppercase;
+  display:flex;align-items:center;gap:7px;
+  margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--bd);
 }
 
-/* ── ESCALERA ── */
-.escalera-wrap { display:flex; flex-direction:column; align-items:center; gap:clamp(3px,1vw,5px); }
-.row { display:flex; gap:clamp(3px,1vw,5px); }
-.pyramid-cell {
-    width:clamp(24px,7vw,30px); height:clamp(24px,7vw,30px);
-    background:var(--py-bg); color:var(--py-fg); border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-size:clamp(.72rem,2.3vw,.85rem); font-weight:800;
+/* ═══ PAGE TITLES (other tabs) ═══ */
+.page-hdr{text-align:center;padding:18px 0 16px}
+.page-hdr h2{
+  font-family:'Cinzel',serif;font-size:clamp(1rem,3.5vw,1.2rem);font-weight:700;
+  letter-spacing:3px;color:var(--gold);text-transform:uppercase;
 }
-.final-row .pyramid-cell {
-    width:clamp(34px,9.5vw,42px); height:clamp(34px,9.5vw,42px);
-    background:var(--gold); color:#0a1f05;
-    font-size:clamp(1rem,3.2vw,1.3rem); font-weight:900; box-shadow:var(--glow-gold);
+.page-hdr p{font-size:.68rem;color:var(--ts);margin-top:4px;letter-spacing:1px}
+
+/* ═══ INPUTS ═══ */
+.input-card{background:var(--bgc);border:1px solid var(--bd);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
+.input-row{display:flex;gap:10px;margin-bottom:11px}
+.inp-wrap{flex:1;min-width:0}
+.inp-label{display:block;font-size:.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--ts);font-weight:800;margin-bottom:5px}
+input[type="text"],input[type="date"],input[type="tel"]{
+  width:100%;padding:11px 10px;font-family:'Nunito',sans-serif;
+  font-size:clamp(.88rem,3vw,1rem);font-weight:800;
+  background:var(--bgi);border:1.5px solid var(--bd);border-radius:10px;
+  color:var(--gold);outline:none;text-align:center;letter-spacing:2px;
+  transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;
+}
+input::placeholder{color:var(--ts);letter-spacing:0;font-size:.7rem;font-weight:600}
+input:focus{border-color:var(--gold);box-shadow:var(--glow-g)}
+input[type="date"]{letter-spacing:0}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1) hue-rotate(15deg);cursor:pointer}
+
+/* ═══ BUTTONS ═══ */
+.btn-gold{
+  width:100%;padding:13px;font-family:'Cinzel',serif;
+  font-size:clamp(.8rem,2.8vw,.94rem);font-weight:700;letter-spacing:2px;
+  background:linear-gradient(135deg,#c9930a 0%,var(--gold) 50%,#f5d76e 100%);
+  color:#0a1f05;border:none;border-radius:10px;cursor:pointer;
+  box-shadow:0 4px 18px rgba(232,185,35,.45);transition:transform .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-gold:active{transform:scale(.97)}
+.btn-green{
+  width:100%;padding:12px;font-family:'Cinzel',serif;
+  font-size:clamp(.75rem,2.6vw,.88rem);font-weight:700;letter-spacing:1.5px;
+  background:linear-gradient(135deg,var(--gm),var(--green));
+  color:#fff;border:none;border-radius:10px;cursor:pointer;
+  box-shadow:var(--glow-gr);transition:transform .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-green:active{transform:scale(.97)}
+.btn-outline{
+  width:100%;padding:11px;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:800;
+  background:transparent;border:1.5px solid var(--green);border-radius:50px;
+  color:var(--green);cursor:pointer;transition:background .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-outline:hover{background:rgba(39,174,96,.1)}
+.btn-wa{
+  width:100%;padding:11px;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:800;
+  background:linear-gradient(135deg,#128c7e,#25d366);
+  color:#fff;border:none;border-radius:50px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(37,211,102,.3);transition:transform .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:10px;
+}
+.btn-wa:active{transform:scale(.97)}
+.btn-sm{
+  padding:7px 14px;font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:800;
+  background:var(--bgi);border:1px solid var(--bd);border-radius:8px;
+  color:var(--ts);cursor:pointer;transition:all .2s;
+}
+.btn-sm:hover{border-color:var(--gold);color:var(--gold)}
+.btn-danger{
+  padding:7px 14px;font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:800;
+  background:transparent;border:1px solid rgba(231,76,60,.4);border-radius:8px;
+  color:#e74c3c;cursor:pointer;
 }
 
-/* ── DIAMANTE ── */
-.diamante-wrap { display:flex; flex-direction:column; align-items:center; }
-.diamond-grid {
-    --dc:clamp(34px,10vw,46px);
-    display:grid; grid-template-columns:repeat(5,var(--dc)); grid-template-rows:repeat(5,var(--dc));
-    gap:clamp(2px,.7vw,4px);
+/* ═══ RESULTS ═══ */
+#results{display:none}
+#results.visible{display:block;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ CAPTURE HEADER ═══ */
+.cap-hdr{
+  background:linear-gradient(135deg,#0f2916 0%,#1a5c2a 100%);
+  border-radius:10px 10px 0 0;padding:13px 16px 11px;text-align:center;
+  border-bottom:2px solid var(--gold-d);
 }
-.d-cell { border-radius:clamp(5px,1.3vw,9px); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:clamp(.95rem,3.3vw,1.25rem); }
-.d-empty  { background:transparent; }
-.d-corner { background:var(--bg-inp); border:1.5px solid rgba(39,174,96,.3); color:var(--green-hi); }
-.d-edge   { background:var(--bg-inp); border:1.5px solid var(--gold-dim); color:var(--gold-light); }
-.d-center { background:var(--gold); color:#0a1f05; font-size:clamp(1.1rem,3.8vw,1.5rem); box-shadow:0 0 22px rgba(232,185,35,.65); border-radius:50%; }
-.diamante-legend { display:flex; gap:14px; margin-top:12px; justify-content:center; flex-wrap:wrap; }
-.legend-item { display:flex; align-items:center; gap:5px; font-size:.6rem; letter-spacing:1px; text-transform:uppercase; color:var(--text-sub); font-weight:700; }
-.legend-dot { width:10px; height:10px; border-radius:3px; }
-.legend-dot.corner { background:var(--green-hi); }
-.legend-dot.edge   { background:var(--gold-light); }
-.legend-dot.center { background:var(--gold); border-radius:50%; }
+[data-theme="light"] .cap-hdr{background:linear-gradient(135deg,#145a32,#1e8449)}
+.cap-label{font-size:.56rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700;margin-bottom:3px}
+.cap-num{font-family:'Cinzel',serif;font-size:clamp(1.4rem,5.5vw,1.9rem);font-weight:900;color:var(--gold);letter-spacing:6px;text-shadow:0 0 20px rgba(232,185,35,.5)}
+.cap-date{font-size:.6rem;color:rgba(255,255,255,.4);margin-top:2px;letter-spacing:.8px}
 
-/* ── RIFA ── */
-.rifa-row { display:flex; gap:8px; }
-.rifa-card { flex:1; background:var(--bg-inp); border:1px solid var(--border-sub); border-radius:12px; padding:12px 5px; text-align:center; }
-.rifa-card.today { background:rgba(232,185,35,.1); border:1.5px solid var(--gold); box-shadow:var(--glow-gold); transform:scale(1.04); }
-.rifa-day { font-size:.58rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:800; margin-bottom:6px; }
-.rifa-card.today .rifa-day { color:var(--gold); }
-.rifa-num { display:block; font-size:clamp(.95rem,3.3vw,1.2rem); font-weight:900; color:var(--gold-light); line-height:1.7; }
-.rifa-card:not(.today) .rifa-num { color:var(--text-sub); font-size:clamp(.85rem,2.8vw,1rem); }
+/* ═══ GATOS ═══ */
+.gatos-row{display:flex;justify-content:center;gap:clamp(8px,3.5vw,20px);align-items:flex-start}
+.gato-block{text-align:center;flex:0 0 auto}
+.gato-lbl{font-size:clamp(.56rem,1.8vw,.66rem);letter-spacing:1.5px;text-transform:uppercase;color:var(--ts);margin-bottom:6px;font-weight:800}
+.grid-3x3{
+  display:grid;grid-template-columns:repeat(3,var(--cell));
+  gap:clamp(2px,.6vw,4px);background:var(--gold-d);
+  padding:clamp(2px,.6vw,4px);border-radius:10px;box-shadow:var(--glow-g);
+}
+.cell{
+  width:var(--cell);height:var(--cell);background:var(--bgi);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(1rem,3.6vw,1.35rem);font-weight:900;color:var(--gold-l);
+  border-radius:clamp(4px,1.2vw,7px);
+}
 
-/* ── MULTIPLICACIÓN ── */
-.multi-block { margin-bottom:14px; }
-.multi-block:last-child { margin-bottom:0; }
-.multi-eq { font-size:.66rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:800; margin-bottom:8px; text-align:center; }
-.multi-grid { display:flex; align-items:center; justify-content:center; gap:clamp(1px,.5vw,3px); flex-wrap:nowrap; }
-.multi-cell { width:clamp(26px,8vw,34px); height:clamp(34px,10vw,44px); background:var(--bg-inp); border:1.5px solid var(--gold-dim); border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:clamp(.95rem,3.2vw,1.25rem); color:var(--gold-light); flex-shrink:0; }
-.multi-cell.hl { border-color:var(--gold); box-shadow:0 0 8px rgba(232,185,35,.3); }
-.lagging-cell { width:clamp(20px,6vw,26px); height:clamp(28px,8.5vw,36px); background:transparent; border:1px solid var(--border-sub); border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:clamp(.72rem,2.3vw,.88rem); color:var(--text-sub); font-weight:600; flex-shrink:0; }
-.separator { width:2px; height:clamp(28px,8vw,36px); background:var(--gold-dim); border-radius:2px; margin:0 clamp(2px,.7vw,5px); flex-shrink:0; }
-.multi-divider { border:none; border-top:1px dashed var(--border-sub); margin:12px 0; }
+/* ═══ ESCALERA ═══ */
+.esc-wrap{display:flex;flex-direction:column;align-items:center;gap:clamp(3px,1vw,5px)}
+.row{display:flex;gap:clamp(3px,1vw,5px)}
+.py-cell{
+  width:clamp(23px,6.8vw,29px);height:clamp(23px,6.8vw,29px);
+  background:var(--pyb);color:var(--pyf);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(.68rem,2.2vw,.82rem);font-weight:800;
+}
+.final-row .py-cell{
+  width:clamp(32px,9.5vw,40px);height:clamp(32px,9.5vw,40px);
+  background:var(--gold);color:#0a1f05;
+  font-size:clamp(.95rem,3vw,1.25rem);font-weight:900;box-shadow:var(--glow-g);
+}
 
-/* ── CAPTURE FOOTER ── */
-.capture-footer { padding:14px 0 4px; text-align:center; border-top:1px solid var(--border); margin-top:4px; }
-.capture-footer .brand { font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:2px; color:var(--gold); font-weight:700; }
-.capture-footer .sub  { font-size:.57rem; color:var(--text-sub); margin-top:2px; letter-spacing:.6px; }
-.capture-footer .ts   { font-size:.52rem; color:var(--border); margin-top:2px; }
+/* ═══ DIAMANTE ═══ */
+.diam-wrap{display:flex;flex-direction:column;align-items:center}
+.diam-grid{
+  --dc:clamp(33px,9.8vw,44px);
+  display:grid;grid-template-columns:repeat(5,var(--dc));
+  grid-template-rows:repeat(5,var(--dc));gap:clamp(2px,.7vw,4px);
+}
+.dc{border-radius:clamp(5px,1.3vw,9px);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:clamp(.9rem,3.2vw,1.2rem)}
+.dc.emp{background:transparent}
+.dc.cor{background:var(--bgi);border:1.5px solid rgba(39,174,96,.3);color:var(--green)}
+.dc.edg{background:var(--bgi);border:1.5px solid var(--gold-d);color:var(--gold-l)}
+.dc.cen{background:var(--gold);color:#0a1f05;font-size:clamp(1.05rem,3.6vw,1.45rem);box-shadow:0 0 22px rgba(232,185,35,.65);border-radius:50%}
+.diam-leg{display:flex;gap:12px;margin-top:10px;justify-content:center;flex-wrap:wrap}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:.58rem;letter-spacing:1px;text-transform:uppercase;color:var(--ts);font-weight:700}
+.leg-dot{width:10px;height:10px;border-radius:3px}
+.leg-dot.cor{background:var(--green)}
+.leg-dot.edg{background:var(--gold-l)}
+.leg-dot.cen{background:var(--gold);border-radius:50%}
 
-/* ── GENERADOR ── */
-.gen-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:clamp(14px,4vw,20px) clamp(12px,3.5vw,18px); margin-bottom:12px; box-shadow:var(--shadow); }
-.cifras-label { font-size:.62rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:800; margin-bottom:9px; }
-.cifras-row { display:flex; gap:8px; margin-bottom:13px; justify-content:center; }
-.cifra-btn { flex:1; max-width:72px; padding:9px 4px; font-family:'Nunito',sans-serif; font-size:.85rem; font-weight:900; background:var(--bg-inp); border:1.5px solid var(--border); border-radius:8px; color:var(--text-sub); cursor:pointer; text-align:center; transition:all .18s; }
-.cifra-btn.active { background:var(--gold); border-color:var(--gold); color:#0a1f05; box-shadow:var(--glow-gold); }
-.btn-generar { width:100%; padding:12px; font-family:'Cinzel',serif; font-size:clamp(.78rem,2.7vw,.88rem); font-weight:700; letter-spacing:1.5px; background:linear-gradient(135deg,var(--green-mid) 0%,var(--green-hi) 100%); color:#fff; border:none; border-radius:10px; cursor:pointer; margin-bottom:14px; box-shadow:var(--glow-green); transition:transform .15s; }
-.btn-generar:active { transform:scale(.97); }
-.gen-results { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.gen-item { border-radius:10px; padding:12px 8px; text-align:center; border:1.5px solid var(--border); background:var(--bg-inp); }
-.gen-item.from-method { border-color:var(--gold-dim); background:rgba(232,185,35,.07); }
-.gen-item.random-pick { border-color:rgba(39,174,96,.3); background:rgba(39,174,96,.06); }
-.gen-tag { font-size:.55rem; letter-spacing:1.5px; text-transform:uppercase; font-weight:800; margin-bottom:6px; }
-.gen-item.from-method .gen-tag { color:var(--gold); }
-.gen-item.random-pick .gen-tag { color:var(--green-hi); }
-.gen-number { font-family:'Cinzel',serif; font-size:clamp(1.35rem,5vw,1.75rem); font-weight:900; letter-spacing:4px; }
-.gen-item.from-method .gen-number { color:var(--gold-light); }
-.gen-item.random-pick .gen-number { color:var(--green-hi); }
-.gen-empty { grid-column:1/-1; text-align:center; font-size:.76rem; color:var(--text-sub); padding:10px; }
+/* ═══ REDUCCIÓN ═══ */
+.red-wrap{display:flex;flex-direction:column;gap:6px}
+.red-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.red-expr{font-size:clamp(.78rem,2.7vw,.92rem);color:var(--ts);font-weight:700;letter-spacing:.5px}
+.red-res{
+  min-width:36px;height:36px;background:var(--bgi);border:1.5px solid var(--gold-d);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:1rem;color:var(--gold-l);
+}
+.red-row.is-final .red-res{
+  width:48px;height:48px;background:var(--gold);color:#0a1f05;
+  font-size:1.4rem;box-shadow:var(--glow-g);border-radius:50%;
+}
+.red-arrow{color:var(--ts);font-size:.9rem}
+.red-meaning{
+  text-align:center;font-size:.72rem;color:var(--ts);
+  padding:8px 12px;background:var(--bgi);border-radius:8px;
+  border:1px solid var(--bd);margin-top:4px;font-weight:600;
+}
+.red-meaning strong{color:var(--gold)}
 
-/* ── RECOMENDACIONES ── */
-.recs-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:12px; box-shadow:var(--shadow); }
-.recs-toggle { width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:transparent; border:none; cursor:pointer; font-family:'Cinzel',serif; font-size:clamp(.7rem,2.3vw,.82rem); font-weight:700; letter-spacing:1.5px; color:var(--text-sub); text-align:left; gap:8px; }
-.recs-toggle .rl { display:flex; align-items:center; gap:8px; }
-.recs-arrow { transition:transform .3s; font-size:.72rem; }
-.recs-toggle.open .recs-arrow { transform:rotate(180deg); }
-.recs-body { max-height:0; overflow:hidden; transition:max-height .4s ease; }
-.recs-body.open { max-height:900px; }
-.recs-inner { padding:0 16px 16px; }
-.rec-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border-sub); }
-.rec-item:last-child { border-bottom:none; }
-.rec-ico { font-size:1.05rem; flex-shrink:0; margin-top:1px; }
-.rec-text { flex:1; }
-.rec-title { font-size:.77rem; font-weight:800; color:var(--text); margin-bottom:2px; }
-.rec-desc  { font-size:.63rem; color:var(--text-sub); line-height:1.5; }
-.rec-badge { font-size:.5rem; letter-spacing:1px; text-transform:uppercase; font-weight:800; padding:2px 7px; border-radius:20px; flex-shrink:0; margin-top:1px; align-self:flex-start; }
-.badge-n { background:rgba(232,185,35,.15); color:var(--gold); }
-.badge-p { background:rgba(39,174,96,.12); color:var(--green-hi); }
+/* ═══ RIFA ═══ */
+.rifa-row{display:flex;gap:8px}
+.rifa-card{flex:1;background:var(--bgi);border:1px solid var(--bds);border-radius:12px;padding:11px 5px;text-align:center}
+.rifa-card.today{background:rgba(232,185,35,.1);border:1.5px solid var(--gold);box-shadow:var(--glow-g);transform:scale(1.04)}
+.rifa-day{font-size:.57rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--ts);font-weight:800;margin-bottom:6px}
+.rifa-card.today .rifa-day{color:var(--gold)}
+.rifa-n{display:block;font-size:clamp(.9rem,3.2vw,1.15rem);font-weight:900;color:var(--gold-l);line-height:1.7}
+.rifa-card:not(.today) .rifa-n{color:var(--ts);font-size:clamp(.82rem,2.7vw,.98rem)}
 
-/* ── DISCLAIMER ── */
-.disclaimer { padding:12px 14px; background:rgba(255,255,255,.02); border:1px solid var(--border-sub); border-radius:10px; font-size:.57rem; color:var(--text-sub); line-height:1.6; text-align:justify; opacity:.7; }
+/* ═══ MULTI ═══ */
+.multi-bl{margin-bottom:12px}
+.multi-bl:last-child{margin-bottom:0}
+.multi-eq{font-size:.64rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--ts);font-weight:800;margin-bottom:7px;text-align:center}
+.multi-grid{display:flex;align-items:center;justify-content:center;gap:clamp(1px,.5vw,3px);flex-wrap:nowrap}
+.mc{width:clamp(25px,7.5vw,32px);height:clamp(32px,9.5vw,42px);background:var(--bgi);border:1.5px solid var(--gold-d);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:clamp(.9rem,3vw,1.2rem);color:var(--gold-l);flex-shrink:0}
+.mc.hl{border-color:var(--gold);box-shadow:0 0 8px rgba(232,185,35,.3)}
+.lc{width:clamp(19px,5.5vw,25px);height:clamp(27px,8vw,34px);background:transparent;border:1px solid var(--bds);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:clamp(.68rem,2.2vw,.84rem);color:var(--ts);font-weight:600;flex-shrink:0}
+.sep{width:2px;height:clamp(27px,8vw,34px);background:var(--gold-d);border-radius:2px;margin:0 clamp(2px,.7vw,5px);flex-shrink:0}
+.multi-div{border:none;border-top:1px dashed var(--bds);margin:10px 0}
+
+/* ═══ CAPTURA FOOTER ═══ */
+.cap-foot{padding:12px 0 4px;text-align:center;border-top:1px solid var(--bd);margin-top:4px}
+.cap-foot .brand{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:2px;color:var(--gold);font-weight:700}
+.cap-foot .sub{font-size:.55rem;color:var(--ts);margin-top:2px;letter-spacing:.5px}
+.cap-foot .ts{font-size:.5rem;color:var(--bd);margin-top:2px}
+
+/* ═══ GENERADOR ═══ */
+.cifras-row{display:flex;gap:7px;margin-bottom:12px;justify-content:center}
+.cifra-btn{flex:1;max-width:70px;padding:9px 4px;font-family:'Nunito',sans-serif;font-size:.83rem;font-weight:900;background:var(--bgi);border:1.5px solid var(--bd);border-radius:8px;color:var(--ts);cursor:pointer;text-align:center;transition:all .18s}
+.cifra-btn.active{background:var(--gold);border-color:var(--gold);color:#0a1f05;box-shadow:var(--glow-g)}
+.gen-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.gen-item{border-radius:10px;padding:11px 7px;text-align:center;border:1.5px solid var(--bd);background:var(--bgi)}
+.gen-item.mth{border-color:var(--gold-d);background:rgba(232,185,35,.07)}
+.gen-item.rnd{border-color:rgba(39,174,96,.3);background:rgba(39,174,96,.06)}
+.gen-tag{font-size:.53rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;margin-bottom:5px}
+.gen-item.mth .gen-tag{color:var(--gold)}
+.gen-item.rnd .gen-tag{color:var(--green)}
+.gen-num{font-family:'Cinzel',serif;font-size:clamp(1.3rem,4.8vw,1.7rem);font-weight:900;letter-spacing:4px}
+.gen-item.mth .gen-num{color:var(--gold-l)}
+.gen-item.rnd .gen-num{color:var(--green)}
+.gen-empty{grid-column:1/-1;text-align:center;font-size:.74rem;color:var(--ts);padding:10px}
+
+/* ═══ HISTORIAL ═══ */
+.hist-item{
+  background:var(--bgi);border:1px solid var(--bd);border-radius:12px;
+  padding:12px 14px;margin-bottom:10px;
+}
+.hist-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.hist-num{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:900;color:var(--gold);letter-spacing:3px}
+.hist-date{font-size:.6rem;color:var(--ts);font-weight:700}
+.hist-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pill{
+  padding:3px 8px;border-radius:20px;font-size:.58rem;font-weight:800;
+  letter-spacing:.5px;
+}
+.pill-g{background:rgba(232,185,35,.12);color:var(--gold);border:1px solid rgba(232,185,35,.25)}
+.pill-gr{background:rgba(39,174,96,.1);color:var(--green);border:1px solid rgba(39,174,96,.2)}
+.hist-actions{display:flex;gap:8px;margin-top:8px}
+.hist-empty{text-align:center;color:var(--ts);font-size:.8rem;padding:30px 0;opacity:.6}
+
+/* ═══ FRECUENCIA ═══ */
+.freq-bar-wrap{display:flex;flex-direction:column;gap:7px}
+.freq-row{display:flex;align-items:center;gap:8px}
+.freq-digit{
+  width:24px;height:24px;border-radius:50%;background:var(--bgi);
+  border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:900;color:var(--gold-l);flex-shrink:0;
+}
+.freq-bar-bg{flex:1;height:20px;background:var(--bgi);border-radius:10px;overflow:hidden}
+.freq-bar-fill{height:100%;background:linear-gradient(90deg,var(--gm),var(--green));border-radius:10px;transition:width .6s ease;min-width:4px}
+.freq-bar-fill.top{background:linear-gradient(90deg,#c9930a,var(--gold))}
+.freq-pct{font-size:.65rem;font-weight:800;color:var(--ts);width:30px;text-align:right;flex-shrink:0}
+.freq-count{font-size:.55rem;color:var(--ts);width:20px;text-align:center;flex-shrink:0}
+.freq-empty{text-align:center;color:var(--ts);font-size:.8rem;padding:30px 0;opacity:.6}
+.freq-summary{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;
+}
+.freq-sum-item{
+  flex:1;min-width:100px;background:var(--bgi);border:1px solid var(--bd);
+  border-radius:10px;padding:10px 12px;text-align:center;
+}
+.freq-sum-label{font-size:.55rem;letter-spacing:1px;text-transform:uppercase;color:var(--ts);font-weight:800;margin-bottom:4px}
+.freq-sum-val{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:900;color:var(--gold)}
+
+/* ═══ PERSONAL NUMEROLOGÍA ═══ */
+.num-result-card{
+  background:var(--bgi);border:2px solid var(--gold-d);border-radius:12px;
+  padding:16px;text-align:center;margin-bottom:12px;
+}
+.num-big{font-family:'Cinzel',serif;font-size:3.5rem;font-weight:900;color:var(--gold);line-height:1;text-shadow:0 0 30px rgba(232,185,35,.4)}
+.num-name{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--ts);font-weight:800;margin-top:4px}
+.num-meaning{font-size:.78rem;color:var(--tx);margin-top:10px;line-height:1.5;font-weight:600}
+.num-master{color:var(--gold);font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;margin-top:4px}
+.num-compat{
+  background:rgba(232,185,35,.07);border:1px solid rgba(232,185,35,.2);
+  border-radius:10px;padding:12px;font-size:.72rem;color:var(--ts);line-height:1.6;
+}
+.num-compat strong{color:var(--gold)}
+.chain-wrap{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center;margin-bottom:12px}
+.chain-step{
+  background:var(--bgi);border:1px solid var(--bd);border-radius:8px;
+  padding:4px 10px;font-size:.72rem;font-weight:800;color:var(--ts);
+}
+.chain-arrow{color:var(--gold-d);font-size:.8rem}
+.chain-final{background:var(--gold);color:#0a1f05;border-color:var(--gold);font-family:'Cinzel',serif;font-size:.9rem}
+
+/* ═══ SORTEOS ═══ */
+.sorteo-card{
+  background:var(--bgi);border:1px solid var(--bds);border-radius:12px;
+  padding:12px 14px;margin-bottom:9px;
+  display:flex;align-items:center;gap:12px;
+}
+.sorteo-card.next{border-color:var(--gold);background:rgba(232,185,35,.07)}
+.sorteo-card.passed{opacity:.5}
+.sorteo-icon{font-size:1.5rem;flex-shrink:0}
+.sorteo-info{flex:1;min-width:0}
+.sorteo-name{font-size:.82rem;font-weight:800;color:var(--tx)}
+.sorteo-time{font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);font-weight:700;letter-spacing:1px}
+.sorteo-countdown{font-size:.6rem;color:var(--ts);margin-top:2px;font-weight:700}
+.sorteo-card.next .sorteo-name{color:var(--gold)}
+.notif-btn{
+  padding:6px 10px;font-family:'Nunito',sans-serif;font-size:.65rem;font-weight:800;
+  border-radius:8px;border:none;cursor:pointer;flex-shrink:0;transition:all .2s;
+}
+.notif-btn.off{background:var(--bgi);border:1px solid var(--bd);color:var(--ts)}
+.notif-btn.on{background:rgba(232,185,35,.15);border:1px solid var(--gold);color:var(--gold)}
+.notif-btn.passed{background:transparent;border:1px solid var(--bds);color:var(--ts);pointer-events:none}
+.notif-bar{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;
+  background:var(--bgi);border:1px solid var(--bd);border-radius:10px;margin-bottom:14px;
+}
+.notif-bar p{flex:1;font-size:.72rem;color:var(--ts);font-weight:700}
+
+/* ═══ MEJORAS (Recommendations) ═══ */
+.recs-card{background:var(--bgc);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;box-shadow:var(--sh)}
+.recs-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:transparent;border:none;cursor:pointer;font-family:'Cinzel',serif;font-size:clamp(.68rem,2.2vw,.8rem);font-weight:700;letter-spacing:1.5px;color:var(--ts);text-align:left;gap:8px}
+.recs-toggle .rl{display:flex;align-items:center;gap:8px}
+.rec-arrow{transition:transform .3s;font-size:.7rem}
+.recs-toggle.open .rec-arrow{transform:rotate(180deg)}
+.recs-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.recs-body.open{max-height:1200px}
+.recs-inner{padding:0 14px 14px}
+.rec-item{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--bds)}
+.rec-item:last-child{border-bottom:none}
+.rec-ico{font-size:1rem;flex-shrink:0;margin-top:1px}
+.rec-text{flex:1}
+.rec-title{font-size:.75rem;font-weight:800;color:var(--tx);margin-bottom:2px}
+.rec-desc{font-size:.62rem;color:var(--ts);line-height:1.5}
+.badge{font-size:.48rem;letter-spacing:1px;text-transform:uppercase;font-weight:800;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:1px;align-self:flex-start}
+.b-n{background:rgba(232,185,35,.15);color:var(--gold)}
+.b-p{background:rgba(39,174,96,.12);color:var(--green)}
+.b-h{background:rgba(231,76,60,.12);color:#e74c3c}
+
+/* ═══ DISCLAIMER ═══ */
+.disclaimer{padding:11px 13px;background:rgba(255,255,255,.02);border:1px solid var(--bds);border-radius:10px;font-size:.56rem;color:var(--ts);line-height:1.6;text-align:justify;opacity:.65;margin-bottom:12px}
+
+/* ═══ CRUZ DE LA FORTUNA ═══ */
+.cruz-grid{
+  display:grid;grid-template-columns:repeat(3,var(--cell));
+  grid-template-rows:repeat(3,var(--cell));
+  gap:clamp(3px,1vw,5px);margin:0 auto;
+  width:fit-content;
+}
+.cruz-cell{
+  width:var(--cell);height:var(--cell);border-radius:clamp(5px,1.5vw,9px);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:clamp(1rem,3.6vw,1.35rem);
+}
+.cruz-cell.orig{background:var(--bgi);border:1.5px solid rgba(39,174,96,.35);color:var(--green)}
+.cruz-cell.calc{background:var(--bgi);border:1.5px solid var(--gold-d);color:var(--gold-l)}
+.cruz-cell.cen{background:var(--gold);color:#0a1f05;border-radius:50%;box-shadow:0 0 20px rgba(232,185,35,.6)}
+.cruz-cell.emp{background:transparent}
+.cruz-legend{display:flex;gap:12px;margin-top:10px;justify-content:center;flex-wrap:wrap}
+.cruz-desc{font-size:.65rem;color:var(--ts);text-align:center;margin-top:8px;line-height:1.5;padding:8px;background:var(--bgi);border-radius:8px;border:1px solid var(--bd)}
+
+/* ═══ TRIÁNGULO MAESTRO ═══ */
+.tri-wrap{display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1.2vw,6px)}
+.tri-row{display:flex;gap:clamp(4px,1.2vw,6px)}
+.tri-cell{
+  width:clamp(30px,8.5vw,38px);height:clamp(30px,8.5vw,38px);
+  background:var(--bgi);border:1.5px solid var(--gold-d);
+  border-radius:clamp(5px,1.3vw,8px);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(.85rem,2.8vw,1rem);font-weight:900;color:var(--gold-l);
+}
+.tri-cell.orig{border-color:rgba(39,174,96,.35);color:var(--green)}
+.tri-cell.fin{
+  width:clamp(42px,11vw,52px);height:clamp(42px,11vw,52px);
+  background:var(--gold);border-color:var(--gold);color:#0a1f05;
+  font-size:clamp(1.15rem,3.8vw,1.4rem);border-radius:50%;
+  box-shadow:0 0 22px rgba(232,185,35,.65);
+}
+
+/* ═══ MISC ═══ */
+.divider{border:none;border-top:1px dashed var(--bds);margin:10px 0}
+.text-center{text-align:center}
+.mt8{margin-top:8px}
+.mt12{margin-top:12px}
+.flex-gap{display:flex;gap:8px}
 </style>
 </head>
 <body>
 
-<!-- THEME TOGGLE -->
-<div class="theme-bar">
-    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️&nbsp; Modo Claro</button>
+<!-- TOP BAR -->
+<div class="top-bar">
+    <button id="install-btn" onclick="installPWA()">📲 Instalar App</button>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️ Modo Claro</button>
 </div>
 
-<div class="wrap">
+<!-- ═══════════════ TAB: CALCULAR ═══════════════ -->
+<div class="tab-panel active" id="t-calc">
+  <div class="app-header">
+    <span class="clover">🍀</span>
+    <h1 class="app-title">SUERTE TRIS</h1>
+    <p class="app-tagline">Tu portal de números de suerte</p>
+  </div>
 
-    <!-- HEADER -->
-    <div class="app-header">
-        <span class="clover-icon">🍀</span>
-        <h1 class="app-title">SUERTE TRIS</h1>
-        <p class="app-tagline">Tu portal de números de suerte</p>
-    </div>
-
-    <!-- INPUT -->
+  <div class="wrap">
     <div class="input-card">
-        <div class="input-row">
-            <div class="input-wrap">
-                <label class="input-label" for="trisInput">N° Ganador</label>
-                <input type="text" id="trisInput" maxlength="5"
-                       placeholder="Último Resultado Tris"
-                       oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-            </div>
-            <div class="input-wrap" style="max-width:150px">
-                <label class="input-label" for="dateInput">Fecha</label>
-                <input type="date" id="dateInput">
-            </div>
+      <div class="input-row">
+        <div class="inp-wrap">
+          <label class="inp-label" for="trisInput">N° Ganador</label>
+          <input type="tel" id="trisInput" maxlength="5"
+                 inputmode="numeric" pattern="[0-9]*"
+                 placeholder="Último Resultado Tris"
+                 oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         </div>
-        <button class="btn-generate" onclick="calcular()">⚡ &nbsp;ATRAER SUERTE</button>
+        <div class="inp-wrap" style="max-width:148px">
+          <label class="inp-label" for="dateInput">Fecha</label>
+          <input type="date" id="dateInput">
+        </div>
+      </div>
+      <button class="btn-gold" onclick="calcular()">⚡ &nbsp;ATRAER SUERTE</button>
     </div>
 
-    <!-- RESULTS -->
     <div id="results">
 
-        <button class="btn-download" id="btn-download" onclick="descargarImagen()">
-            📸 &nbsp;Guardar Amuleto como Imagen
+      <button class="btn-wa" id="btn-wa" onclick="compartirWA()">
+        💚 &nbsp;Compartir en WhatsApp
+      </button>
+      <button class="btn-outline" id="btn-download" onclick="descargarImagen()" style="margin-bottom:12px">
+        📸 &nbsp;Guardar como Imagen
+      </button>
+
+      <!-- CAPTURE AREA -->
+      <div id="capture-area">
+        <div class="cap-hdr">
+          <div class="cap-label">🍀 Suerte Tris — Análisis del número</div>
+          <div class="cap-num" id="ch-num">—</div>
+          <div class="cap-date" id="ch-date"></div>
+        </div>
+
+        <!-- TABLEROS -->
+        <div class="card no-top">
+          <div class="sec-title">🔮 Tableros</div>
+          <div class="gatos-row">
+            <div class="gato-block">
+              <div class="gato-lbl">Gato 1</div>
+              <div class="grid-3x3" id="gato1"></div>
+            </div>
+            <div class="gato-block">
+              <div class="gato-lbl">Gato 2</div>
+              <div class="grid-3x3" id="gato2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ESCALERA -->
+        <div class="card">
+          <div class="sec-title">🪜 Escalera</div>
+          <div class="esc-wrap" id="escalera"></div>
+        </div>
+
+        <!-- DIAMANTE -->
+        <div class="card">
+          <div class="sec-title">💎 Diamante de la Suerte</div>
+          <div class="diam-wrap" id="diamante"></div>
+          <div class="diam-leg">
+            <div class="leg-i"><div class="leg-dot cor"></div>Esquinas</div>
+            <div class="leg-i"><div class="leg-dot edg"></div>Brazos</div>
+            <div class="leg-i"><div class="leg-dot cen"></div>Centro</div>
+          </div>
+        </div>
+
+        <!-- REDUCCIÓN NUMEROLÓGICA -->
+        <div class="card">
+          <div class="sec-title">🔻 Reducción Numerológica</div>
+          <div class="red-wrap" id="reduccion"></div>
+          <div class="red-meaning mt8" id="red-meaning"></div>
+        </div>
+
+        <!-- CRUZ DE LA FORTUNA -->
+        <div class="card">
+          <div class="sec-title">✝️ Cruz de la Fortuna</div>
+          <div class="text-center" id="cruz-wrap"></div>
+          <div id="cruz-desc" class="cruz-desc mt8"></div>
+        </div>
+
+        <!-- TRIÁNGULO MAESTRO -->
+        <div class="card">
+          <div class="sec-title">🔺 Triángulo Maestro</div>
+          <div class="tri-wrap" id="tri-wrap"></div>
+          <div class="red-meaning mt8" id="tri-meaning"></div>
+        </div>
+
+        <!-- RIFA -->
+        <div class="card">
+          <div class="sec-title">📅 La Rifa del Día</div>
+          <div class="rifa-row" id="rifa-section"></div>
+        </div>
+
+        <!-- MULTIPLICACIÓN -->
+        <div class="card">
+          <div class="sec-title">✖️ Multiplicación Maestra</div>
+          <div class="multi-bl">
+            <div class="multi-eq" id="lbl333"></div>
+            <div class="multi-grid" id="res333"></div>
+          </div>
+          <hr class="multi-div">
+          <div class="multi-bl">
+            <div class="multi-eq" id="lbl777"></div>
+            <div class="multi-grid" id="res777"></div>
+          </div>
+        </div>
+
+        <!-- CAPTURE FOOTER -->
+        <div class="cap-foot">
+          <div class="brand">© <span id="yr"></span> &nbsp;DANKING92</div>
+          <div class="sub">Trabajo Personal &nbsp;|&nbsp; Ayudado por Gemini AI &amp; Claude IA</div>
+          <div class="ts">Generado el: <span id="gen-ts"></span></div>
+        </div>
+      </div><!-- /capture-area -->
+
+      <!-- GENERADOR (outside capture) -->
+      <div class="card mt12">
+        <div class="sec-title">🎰 Generador Automático</div>
+        <p style="font-size:.62rem;color:var(--ts);font-weight:800;letter-spacing:.8px;margin-bottom:9px;text-transform:uppercase">Selecciona cuántas cifras:</p>
+        <div class="cifras-row">
+          <button class="cifra-btn" data-val="2" onclick="setCifras(this)">2</button>
+          <button class="cifra-btn" data-val="3" onclick="setCifras(this)">3</button>
+          <button class="cifra-btn active" data-val="4" onclick="setCifras(this)">4</button>
+          <button class="cifra-btn" data-val="5" onclick="setCifras(this)">5</button>
+        </div>
+        <button class="btn-green mt8" onclick="generarNumeros()" style="margin-bottom:12px">🎲 &nbsp;GENERAR MIS NÚMEROS</button>
+        <div class="gen-grid" id="gen-results">
+          <div class="gen-empty">Presiona "Generar" para ver tus números</div>
+        </div>
+      </div>
+
+      <!-- MEJORAS -->
+      <div class="recs-card mt12">
+        <button class="recs-toggle" id="recsBtn" onclick="toggleRecs()">
+          <div class="rl">💡 &nbsp;IDEAS &amp; PRÓXIMAS MEJORAS</div>
+          <span class="rec-arrow" id="recArrow">▼</span>
         </button>
-
-        <!-- ═══ CAPTURE AREA ═══ -->
-        <div id="capture-area">
-
-            <!-- Title shown in image -->
-            <div class="capture-header">
-                <div class="ch-label">🍀 Suerte Tris — Análisis del número</div>
-                <div class="ch-number" id="ch-number">—</div>
-                <div class="ch-date" id="ch-date"></div>
-            </div>
-
-            <!-- TABLEROS -->
-            <div class="section-card no-top-r">
-                <div class="section-title"><span>🔮</span> Tableros</div>
-                <div class="gatos-row">
-                    <div class="gato-block">
-                        <div class="gato-label">Gato 1</div>
-                        <div class="grid-3x3" id="gato1"></div>
-                    </div>
-                    <div class="gato-block">
-                        <div class="gato-label">Gato 2</div>
-                        <div class="grid-3x3" id="gato2"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ESCALERA -->
-            <div class="section-card">
-                <div class="section-title"><span>🪜</span> Escalera</div>
-                <div class="escalera-wrap" id="escalera"></div>
-            </div>
-
-            <!-- DIAMANTE -->
-            <div class="section-card">
-                <div class="section-title"><span>💎</span> Diamante de la Suerte</div>
-                <div class="diamante-wrap" id="diamante"></div>
-                <div class="diamante-legend">
-                    <div class="legend-item"><div class="legend-dot corner"></div>Esquinas (original)</div>
-                    <div class="legend-item"><div class="legend-dot edge"></div>Brazos (calculado)</div>
-                    <div class="legend-item"><div class="legend-dot center"></div>Centro (clave)</div>
-                </div>
-            </div>
-
-            <!-- RIFA -->
-            <div class="section-card">
-                <div class="section-title"><span>📅</span> La Rifa del Día</div>
-                <div class="rifa-row" id="rifa-section"></div>
-            </div>
-
-            <!-- MULTIPLICACIÓN -->
-            <div class="section-card">
-                <div class="section-title"><span>✖️</span> Multiplicación Maestra</div>
-                <div class="multi-block">
-                    <div class="multi-eq" id="label-333"></div>
-                    <div class="multi-grid" id="res-333"></div>
-                </div>
-                <hr class="multi-divider">
-                <div class="multi-block">
-                    <div class="multi-eq" id="label-777"></div>
-                    <div class="multi-grid" id="res-777"></div>
-                </div>
-            </div>
-
-            <!-- FOOTER inside image -->
-            <div class="capture-footer">
-                <div class="brand">© <span id="year"></span> &nbsp;DANKING92</div>
-                <div class="sub">Trabajo Personal &nbsp;|&nbsp; Ayudado por Gemini AI &amp; Claude IA</div>
-                <div class="ts">Generado el: <span id="fecha-generacion"></span></div>
-            </div>
-
-        </div><!-- /capture-area -->
-
-        <!-- ═══ GENERADOR AUTOMÁTICO (outside capture) ═══ -->
-        <div class="gen-card" style="margin-top:14px;">
-            <div class="section-title" style="margin-bottom:10px;"><span>🎰</span> Generador Automático</div>
-            <p class="cifras-label">Selecciona cuántas cifras:</p>
-            <div class="cifras-row">
-                <button class="cifra-btn" data-val="2" onclick="setCifras(this)">2 cifras</button>
-                <button class="cifra-btn" data-val="3" onclick="setCifras(this)">3 cifras</button>
-                <button class="cifra-btn active" data-val="4" onclick="setCifras(this)">4 cifras</button>
-                <button class="cifra-btn" data-val="5" onclick="setCifras(this)">5 cifras</button>
-            </div>
-            <button class="btn-generar" onclick="generarNumeros()">🎲 &nbsp;GENERAR MIS NÚMEROS</button>
-            <div class="gen-results" id="gen-results">
-                <div class="gen-empty">Presiona "Generar" para ver tus números de suerte</div>
-            </div>
+        <div class="recs-body" id="recsBody">
+          <div class="recs-inner" id="recs-list"></div>
         </div>
+      </div>
 
-        <!-- ═══ RECOMENDACIONES ═══ -->
-        <div class="recs-card">
-            <button class="recs-toggle" id="recsBtn" onclick="toggleRecs()">
-                <div class="rl"><span>💡</span><span>PRÓXIMAS MEJORAS &amp; IDEAS</span></div>
-                <span class="recs-arrow" id="recsArrow">▼</span>
-            </button>
-            <div class="recs-body" id="recsBody">
-                <div class="recs-inner">
-                    <div class="rec-item">
-                        <span class="rec-ico">📊</span>
-                        <div class="rec-text">
-                            <div class="rec-title">Historial de Análisis</div>
-                            <div class="rec-desc">Guardar localmente los últimos números analizados con fecha y resultados, para consultar sin conexión.</div>
-                        </div>
-                        <span class="rec-badge badge-n">Idea</span>
-                    </div>
-                    <div class="rec-item">
-                        <span class="rec-ico">🔔</span>
-                        <div class="rec-text">
-                            <div class="rec-title">Recordatorio de Sorteos Tris</div>
-                            <div class="rec-desc">Notificaciones push con los horarios del día: Classic, Día, Tarde y Noche.</div>
-                        </div>
-                        <span class="rec-badge badge-n">Idea</span>
-                    </div>
-                    <div class="rec-item">
-                        <span class="rec-ico">🌐</span>
-                        <div class="rec-text">
-                            <div class="rec-title">Consulta Automática del Resultado</div>
-                            <div class="rec-desc">Obtener el último número ganador Tris automáticamente vía API, sin ingresarlo de forma manual.</div>
-                        </div>
-                        <span class="rec-badge badge-p">Avanzado</span>
-                    </div>
-                    <div class="rec-item">
-                        <span class="rec-ico">📈</span>
-                        <div class="rec-text">
-                            <div class="rec-title">Análisis de Frecuencia de Dígitos</div>
-                            <div class="rec-desc">Gráfica de qué dígitos (0–9) salen más en los métodos a lo largo del tiempo, con el historial guardado.</div>
-                        </div>
-                        <span class="rec-badge badge-n">Idea</span>
-                    </div>
-                    <div class="rec-item">
-                        <span class="rec-ico">📱</span>
-                        <div class="rec-text">
-                            <div class="rec-title">App Instalable (PWA)</div>
-                            <div class="rec-desc">Agregar Service Worker y manifiesto completo para instalarse en la pantalla de inicio como app nativa.</div>
-                        </div>
-                        <span class="rec-badge badge-p">Avanzado</span>
-                    </div>
-                    <div class="rec-item">
-                        <span class="rec-ico">🔢</span>
-                        <div class="rec-text">
-                            <div class="rec-title">Numerología Personal</div>
-                            <div class="rec-desc">Incorporar la fecha de nacimiento del usuario para generar un "número de suerte personal" combinado con los métodos actuales.</div>
-                        </div>
-                        <span class="rec-badge badge-n">Idea</span>
-                    </div>
-                    <div class="rec-item">
-                        <span class="rec-ico">💚</span>
-                        <div class="rec-text">
-                            <div class="rec-title">Compartir directo a WhatsApp</div>
-                            <div class="rec-desc">Botón de un tap para compartir el amuleto generado en WhatsApp, sin necesidad de descargar primero.</div>
-                        </div>
-                        <span class="rec-badge badge-n">Idea</span>
-                    </div>
-                    <div class="rec-item">
-                        <span class="rec-ico">🌙</span>
-                        <div class="rec-text">
-                            <div class="rec-title">Más Métodos Numerológicos</div>
-                            <div class="rec-desc">Agregar métodos adicionales: Triángulo de Pascal, Cruz de San Andrés, Cuadrado Mágico personalizado.</div>
-                        </div>
-                        <span class="rec-badge badge-n">Idea</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- DISCLAIMER -->
-        <div class="disclaimer">
-            <strong>⚠️ Aviso Legal:</strong> Herramienta exclusivamente recreativa y de entretenimiento. Los resultados se basan en numerología y probabilidad subjetiva. <strong>No se garantizan premios ni ganancias</strong> en ningún sorteo o lotería. Juegue con responsabilidad.
-        </div>
+      <div class="disclaimer">
+        <strong>⚠️ Aviso Legal:</strong> Herramienta exclusivamente recreativa. Los resultados se basan en numerología y probabilidad subjetiva. <strong>No se garantizan premios ni ganancias.</strong> Juega con responsabilidad.
+      </div>
 
     </div><!-- /results -->
-</div><!-- /wrap -->
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: HISTORIAL ═══════════════ -->
+<div class="tab-panel" id="t-hist">
+  <div class="wrap">
+    <div class="page-hdr">
+      <h2>📋 Historial</h2>
+      <p>Tus últimos análisis guardados</p>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button class="btn-danger" onclick="clearHistory()">🗑 Limpiar todo</button>
+    </div>
+    <div id="hist-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: FRECUENCIA ═══════════════ -->
+<div class="tab-panel" id="t-freq">
+  <div class="wrap">
+    <div class="page-hdr">
+      <h2>📊 Frecuencia</h2>
+      <p>Dígitos más frecuentes en tus análisis</p>
+    </div>
+    <div id="freq-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: PERSONAL ═══════════════ -->
+<div class="tab-panel" id="t-pers">
+  <div class="wrap">
+    <div class="page-hdr">
+      <h2>🔮 Numerología Personal</h2>
+      <p>Tu número de vida y compatibilidad</p>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">🎂 Fecha de Nacimiento</div>
+      <div class="inp-wrap" style="margin-bottom:12px">
+        <label class="inp-label">Tu fecha de nacimiento</label>
+        <input type="date" id="birthDate" onchange="calcPersonal()">
+      </div>
+      <div class="inp-wrap">
+        <label class="inp-label">Número Tris analizado (opcional)</label>
+        <input type="tel" id="persTrisTxt" maxlength="5" inputmode="numeric" pattern="[0-9]*"
+               placeholder="Ej. 37096"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'');calcPersonal()">
+      </div>
+    </div>
+
+    <div id="pers-results" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: SORTEOS ═══════════════ -->
+<div class="tab-panel" id="t-sort">
+  <div class="wrap">
+    <div class="page-hdr">
+      <h2>⏰ Sorteos Tris</h2>
+      <p>Horarios y recordatorios del día</p>
+    </div>
+
+    <div class="notif-bar">
+      <span style="font-size:1.2rem">🔔</span>
+      <p id="notif-status">Activa las notificaciones para recordatorios 15 min antes de cada sorteo.</p>
+      <button class="btn-sm" id="notif-perm-btn" onclick="requestNotifPerm()">Activar</button>
+    </div>
+
+    <div id="sorteos-list"></div>
+
+    <div class="card mt12">
+      <div class="sec-title">ℹ️ Acerca del Tris</div>
+      <p style="font-size:.72rem;color:var(--ts);line-height:1.7">
+        El <strong style="color:var(--tx)">Tris</strong> es un juego de la <strong style="color:var(--tx)">Lotería Nacional de México</strong> con sorteos múltiples al día.
+        Se eligen 5 números del 0 al 9 para formar una combinación ganadora de 5 dígitos.
+        <br><br>
+        Los sorteos se transmiten en vivo en el canal oficial de YouTube y la app de la Lotería Nacional.
+        Recuerda que es un juego de azar — juega con responsabilidad. 🍀
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showTab('calc',this)" id="nav-calc">
+    <span class="ni">🍀</span><span>Calcular</span>
+  </button>
+  <button class="nav-btn" onclick="showTab('hist',this)" id="nav-hist">
+    <span class="ni">📋</span><span>Historial</span>
+  </button>
+  <button class="nav-btn" onclick="showTab('freq',this)" id="nav-freq">
+    <span class="ni">📊</span><span>Frecuencia</span>
+  </button>
+  <button class="nav-btn" onclick="showTab('pers',this)" id="nav-pers">
+    <span class="ni">🔮</span><span>Personal</span>
+  </button>
+  <button class="nav-btn" onclick="showTab('sort',this)" id="nav-sort">
+    <span class="ni">⏰</span><span>Sorteos</span>
+  </button>
+</nav>
 
 <script>
-/* ─── INIT ─── */
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
 document.getElementById('dateInput').valueAsDate = new Date();
-document.getElementById('year').textContent = new Date().getFullYear();
+document.getElementById('yr').textContent = new Date().getFullYear();
 
 let currentTheme = 'dark';
 let methodDigitsPool = [];
 let activeCifras = 4;
+let lastTrisNum = '';
+let deferredPrompt = null;
 
-/* ─── THEME ─── */
-function toggleTheme() {
-    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    document.getElementById('themeBtn').innerHTML =
-        currentTheme === 'dark' ? '☀️&nbsp; Modo Claro' : '🌙&nbsp; Modo Oscuro';
+// PWA Manifest
+(function(){
+  const m = {
+    name:'Suerte Tris',short_name:'SuerteTris',
+    description:'Tu portal de números de suerte para el Tris',
+    start_url:'./',display:'standalone',
+    background_color:'#060f09',theme_color:'#e8b923',orientation:'portrait',
+    icons:[{src:`data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><text y="165" font-size="175">🍀</text></svg>')}`,sizes:'192x192',type:'image/svg+xml'}]
+  };
+  try{
+    const blob=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+    document.getElementById('app-manifest').href=URL.createObjectURL(blob);
+  }catch(e){}
+})();
+
+// PWA install
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('install-btn').style.display = 'flex';
+});
+function installPWA(){
+  if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt=null; document.getElementById('install-btn').style.display='none'; }
 }
 
-/* ─── CIFRAS ─── */
-function setCifras(el) {
-    document.querySelectorAll('.cifra-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    activeCifras = parseInt(el.dataset.val);
+// Init calls moved to end of script to avoid TDZ errors
+
+/* ══════════════════════════════════
+   TAB NAVIGATION
+══════════════════════════════════ */
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('t-' + name).classList.add('active');
+  btn.classList.add('active');
+  if(name === 'hist') renderHistorial();
+  if(name === 'freq') renderFrecuencia();
+  if(name === 'sort') renderSorteos();
 }
 
-/* ─── UTILS ─── */
+/* ══════════════════════════════════
+   THEME
+══════════════════════════════════ */
+function toggleTheme(){
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  document.getElementById('themeBtn').innerHTML = currentTheme === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
+}
+
+/* ══════════════════════════════════
+   UTILS
+══════════════════════════════════ */
 const m10 = (a,b) => (parseInt(a)+parseInt(b)) % 10;
 
-/* ─── MAIN ─── */
+/* ══════════════════════════════════
+   MAIN CALCULATE
+══════════════════════════════════ */
 function calcular() {
-    const raw  = document.getElementById('trisInput').value.trim();
-    const date = document.getElementById('dateInput').value;
-    if (raw.length !== 5 || isNaN(raw)) { alert('Ingresa los 5 dígitos del Tris.'); return; }
+  const raw  = document.getElementById('trisInput').value.trim();
+  const date = document.getElementById('dateInput').value;
+  if(raw.length !== 5 || isNaN(raw)){ alert('Ingresa los 5 dígitos del número Tris.'); return; }
 
-    const data = raw.split('').map(Number);
-    const num  = parseInt(raw);
+  const data = raw.split('').map(Number);
+  const num  = parseInt(raw);
+  lastTrisNum = raw;
 
-    const gRes  = computeGatos(data);
-    const eRes  = computeEscalera(data, date);
-    const dRes  = computeDiamante(data);
-    const rRes  = computeRifa(date);
-    const mRes  = computeMulti(num);
+  const gRes = computeGatos(data);
+  const eRes = computeEscalera(data, date);
+  const dRes = computeDiamante(data);
+  const cRes = computeCruz(data);
+  const tRes = computeTriangulo(data);
+  const rRes = computeRifa(date);
+  const mRes = computeMulti(num);
+  const red  = computeReduccion(data);
 
-    renderGatos(gRes);
-    renderEscalera(data, date);
-    renderDiamante(data, dRes);
-    renderRifa(date);
-    renderMultiplicacion(num, raw);
+  renderGatos(gRes);
+  renderEscalera(data, date);
+  renderDiamante(data, dRes);
+  renderReduccion(data, red);
+  renderCruz(data, cRes);
+  renderTriangulo(data, tRes);
+  renderRifa(date);
+  renderMultiplicacion(num, raw);
 
-    // Pool of unique digits from all methods
-    const all = [...gRes.g1.flat(), ...gRes.g2.flat(), ...eRes, ...dRes, ...rRes, ...mRes];
-    methodDigitsPool = [...new Set(all)].filter(v => typeof v === 'number');
+  // Build digit pool
+  const cruDigits=Object.values(cRes).filter(v=>typeof v==='number');
+  const triDigits=tRes.flat();
+  const all = [...gRes.g1.flat(),...gRes.g2.flat(),...eRes,...dRes,...rRes,...mRes,...cruDigits,...triDigits];
+  methodDigitsPool = [...new Set(all)].filter(v => typeof v === 'number');
 
-    // Image header
-    document.getElementById('ch-number').textContent = raw;
-    document.getElementById('ch-date').textContent =
-        new Date(date+'T00:00:00').toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    document.getElementById('fecha-generacion').textContent = new Date().toLocaleString('es-MX');
+  // Capture header
+  document.getElementById('ch-num').textContent = raw;
+  document.getElementById('ch-date').textContent = new Date(date+'T00:00:00').toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('gen-ts').textContent = new Date().toLocaleString('es-MX');
 
-    // Reset generator output
-    document.getElementById('gen-results').innerHTML =
-        '<div class="gen-empty">Presiona "Generar" para ver tus números de suerte</div>';
+  // Save to history
+  saveHistory({
+    id: Date.now(), trisNum: raw, calcDate: date,
+    savedAt: new Date().toLocaleString('es-MX'),
+    esencia: red.final,
+    gatoC1: gRes.g1[1][1], gatoC2: gRes.g2[1][1],
+    diamCen: dRes[4], escFinal: eRes[eRes.length-1],
+    allDigits: all.filter(v => typeof v === 'number')
+  });
 
-    const el = document.getElementById('results');
-    el.style.display = 'block';
-    el.classList.remove('visible');
-    void el.offsetWidth;
-    el.classList.add('visible');
-    setTimeout(() => el.scrollIntoView({behavior:'smooth',block:'start'}), 60);
+  document.getElementById('gen-results').innerHTML = '<div class="gen-empty">Presiona "Generar" para ver tus números</div>';
+
+  const el = document.getElementById('results');
+  el.style.display = 'block'; el.classList.remove('visible');
+  void el.offsetWidth; el.classList.add('visible');
+  setTimeout(() => el.scrollIntoView({behavior:'smooth',block:'start'}), 60);
 }
 
-/* ─── GATOS ─── */
-function buildGato(d, i0, i1, i2, i3) {
-    const g = [[0,0,0],[0,0,0],[0,0,0]];
-    g[0][0]=d[i0]; g[0][2]=d[i1]; g[2][0]=d[i2]; g[2][2]=d[i3];
-    g[0][1]=m10(g[0][0],g[0][2]); g[2][1]=m10(g[2][0],g[2][2]);
-    g[1][0]=m10(g[0][0],g[2][0]); g[1][2]=m10(g[0][2],g[2][2]);
-    g[1][1]=m10(g[0][1],g[2][1]);
-    return g;
+/* ══════════════════════════════════
+   GATOS
+══════════════════════════════════ */
+function buildGato(d,i0,i1,i2,i3){
+  const g=[[0,0,0],[0,0,0],[0,0,0]];
+  g[0][0]=d[i0];g[0][2]=d[i1];g[2][0]=d[i2];g[2][2]=d[i3];
+  g[0][1]=m10(g[0][0],g[0][2]);g[2][1]=m10(g[2][0],g[2][2]);
+  g[1][0]=m10(g[0][0],g[2][0]);g[1][2]=m10(g[0][2],g[2][2]);
+  g[1][1]=m10(g[0][1],g[2][1]);
+  return g;
 }
-function computeGatos(data) { return { g1:buildGato(data,0,1,3,4), g2:buildGato(data,1,2,3,4) }; }
-function renderGatos({g1,g2}) { drawGrid('gato1',g1); drawGrid('gato2',g2); }
-function drawGrid(id, matrix) {
-    const el = document.getElementById(id); el.innerHTML='';
-    matrix.forEach(row => row.forEach(n => {
-        const d=document.createElement('div'); d.className='cell'; d.textContent=n; el.appendChild(d);
-    }));
-}
-
-/* ─── ESCALERA ─── */
-function computeEscalera(data, dateStr) {
-    const day=new Date(dateStr+'T00:00:00').getDate();
-    let lvl=[...data, Math.floor(day/10), day%10];
-    const all=[...lvl];
-    while(lvl.length>1){ lvl=lvl.slice(0,-1).map((v,i)=>m10(v,lvl[i+1])); all.push(...lvl); }
-    return all;
-}
-function renderEscalera(data, dateStr) {
-    const day=new Date(dateStr+'T00:00:00').getDate();
-    let lvl=[...data, Math.floor(day/10), day%10];
-    const el=document.getElementById('escalera'); el.innerHTML='';
-    drawPRow(el, lvl);
-    while(lvl.length>1){ lvl=lvl.slice(0,-1).map((v,i)=>m10(v,lvl[i+1])); drawPRow(el,lvl,lvl.length===1); }
-}
-function drawPRow(container, numbers, isFinal=false) {
-    const row=document.createElement('div'); row.className='row'+(isFinal?' final-row':'');
-    numbers.forEach(n=>{ const c=document.createElement('div'); c.className='pyramid-cell'; c.textContent=n; row.appendChild(c); });
-    container.appendChild(row);
+function computeGatos(d){ return{g1:buildGato(d,0,1,3,4),g2:buildGato(d,1,2,3,4)}; }
+function renderGatos({g1,g2}){ drawGrid('gato1',g1); drawGrid('gato2',g2); }
+function drawGrid(id,matrix){
+  const el=document.getElementById(id); el.innerHTML='';
+  matrix.forEach(row=>row.forEach(n=>{
+    const d=document.createElement('div'); d.className='cell'; d.textContent=n; el.appendChild(d);
+  }));
 }
 
-/* ─── DIAMANTE ─── */
-function computeDiamante(data) {
-    const [TL,TR,,BL,BR]=[data[0],data[1],data[2],data[3],data[4]];
-    return [TL,TR,BL,BR,(TL+TR+BL+BR)%10,(TL+TR)%10,(TL+BL)%10,(TR+BR)%10,(BL+BR)%10];
+/* ══════════════════════════════════
+   ESCALERA
+══════════════════════════════════ */
+function computeEscalera(data, dateStr){
+  const day=new Date(dateStr+'T00:00:00').getDate();
+  let lvl=[...data,Math.floor(day/10),day%10];
+  const all=[...lvl];
+  while(lvl.length>1){lvl=lvl.slice(0,-1).map((v,i)=>m10(v,lvl[i+1]));all.push(...lvl);}
+  return all;
 }
-function renderDiamante(data, digs) {
-    const [TL,TR,BL,BR,center,armT,armL,armR,armB]=digs;
-    const map={
-        '0-0':{t:'d-corner',v:TL},'0-4':{t:'d-corner',v:TR},
-        '1-2':{t:'d-edge',v:armT},
-        '2-0':{t:'d-edge',v:armL},'2-2':{t:'d-center',v:center},'2-4':{t:'d-edge',v:armR},
-        '3-2':{t:'d-edge',v:armB},
-        '4-0':{t:'d-corner',v:BL},'4-4':{t:'d-corner',v:BR},
-    };
-    const wrap=document.getElementById('diamante'); wrap.innerHTML='';
-    const grid=document.createElement('div'); grid.className='diamond-grid';
-    for(let r=0;r<5;r++) for(let c=0;c<5;c++){
-        const key=`${r}-${c}`, div=document.createElement('div');
-        div.className=map[key]?`d-cell ${map[key].t}`:'d-cell d-empty';
-        if(map[key]) div.textContent=map[key].v;
-        grid.appendChild(div);
-    }
-    wrap.appendChild(grid);
+function renderEscalera(data, dateStr){
+  const day=new Date(dateStr+'T00:00:00').getDate();
+  let lvl=[...data,Math.floor(day/10),day%10];
+  const el=document.getElementById('escalera'); el.innerHTML='';
+  drawPRow(el,lvl);
+  while(lvl.length>1){lvl=lvl.slice(0,-1).map((v,i)=>m10(v,lvl[i+1]));drawPRow(el,lvl,lvl.length===1);}
+}
+function drawPRow(container,nums,isFinal=false){
+  const row=document.createElement('div'); row.className='row'+(isFinal?' final-row':'');
+  nums.forEach(n=>{const c=document.createElement('div');c.className='py-cell';c.textContent=n;row.appendChild(c);});
+  container.appendChild(row);
 }
 
-/* ─── RIFA ─── */
-function computeRifa(dateStr) {
-    const digs=[];
-    [-1,0,1].forEach(off=>{
-        const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+off);
-        const base=d.getDate();
-        [base,(base+33)%100,(base+66)%100].forEach(n=>String(n).padStart(2,'0').split('').forEach(ch=>digs.push(+ch)));
+/* ══════════════════════════════════
+   DIAMANTE
+══════════════════════════════════ */
+function computeDiamante(d){
+  const[TL,TR,,BL,BR]=[d[0],d[1],d[2],d[3],d[4]];
+  return[TL,TR,BL,BR,(TL+TR+BL+BR)%10,(TL+TR)%10,(TL+BL)%10,(TR+BR)%10,(BL+BR)%10];
+}
+function renderDiamante(data,digs){
+  const[TL,TR,BL,BR,cen,aT,aL,aR,aB]=digs;
+  const map={'0-0':{t:'cor',v:TL},'0-4':{t:'cor',v:TR},'1-2':{t:'edg',v:aT},'2-0':{t:'edg',v:aL},'2-2':{t:'cen',v:cen},'2-4':{t:'edg',v:aR},'3-2':{t:'edg',v:aB},'4-0':{t:'cor',v:BL},'4-4':{t:'cor',v:BR}};
+  const wrap=document.getElementById('diamante'); wrap.innerHTML='';
+  const grid=document.createElement('div'); grid.className='diam-grid';
+  for(let r=0;r<5;r++)for(let c=0;c<5;c++){
+    const key=`${r}-${c}`,div=document.createElement('div');
+    div.className=map[key]?`dc ${map[key].t}`:'dc emp';
+    if(map[key])div.textContent=map[key].v;
+    grid.appendChild(div);
+  }
+  wrap.appendChild(grid);
+}
+
+/* ══════════════════════════════════
+   REDUCCIÓN NUMEROLÓGICA
+══════════════════════════════════ */
+const RED_MEANINGS = {
+  1:'Liderazgo e independencia — Este número impulsa la iniciativa y la originalidad.',
+  2:'Cooperación y sensibilidad — Favorece las relaciones y la diplomacia.',
+  3:'Creatividad y alegría — Energía de expresión, comunicación y fortuna social.',
+  4:'Estabilidad y disciplina — Número de trabajo, construcción y perseverancia.',
+  5:'Libertad y aventura — Cambios favorables, dinamismo y buena suerte en movimiento.',
+  6:'Amor y responsabilidad — Armonía en el hogar y protección familiar.',
+  7:'Sabiduría e introspección — Análisis profundo y conexión espiritual.',
+  8:'Abundancia y poder — Número del éxito material y el equilibrio kármico.',
+  9:'Compasión y transformación — Cierre de ciclos y nuevos comienzos.',
+};
+function computeReduccion(data){
+  const steps=[];
+  let current=data.reduce((a,b)=>a+b,0);
+  steps.push({expr:data.join('+'),result:current});
+  while(current>9){
+    const digs=String(current).split('').map(Number);
+    const next=digs.reduce((a,b)=>a+b,0);
+    steps.push({expr:digs.join('+'),result:next});
+    current=next;
+  }
+  return{steps,final:current};
+}
+function renderReduccion(data,{steps,final}){
+  const el=document.getElementById('reduccion'); el.innerHTML='';
+  steps.forEach((s,i)=>{
+    const isFinal=i===steps.length-1;
+    const row=document.createElement('div');
+    row.className='red-row'+(isFinal?' is-final':'');
+    if(i>0){const arr=document.createElement('span');arr.className='red-arrow';arr.textContent='→';el.appendChild(arr);}
+    row.innerHTML=`<span class="red-expr">${s.expr} =</span><span class="red-res">${s.result}</span>`;
+    el.appendChild(row);
+  });
+  const meaning=document.getElementById('red-meaning');
+  meaning.innerHTML=`<strong>Número Esencia: ${final}</strong> — ${RED_MEANINGS[final]||''}`;
+}
+
+/* ══════════════════════════════════
+   RIFA
+══════════════════════════════════ */
+function computeRifa(dateStr){
+  const digs=[];
+  [-1,0,1].forEach(off=>{
+    const d=new Date(dateStr+'T00:00:00');d.setDate(d.getDate()+off);
+    const b=d.getDate();
+    [b,(b+33)%100,(b+66)%100].forEach(n=>String(n).padStart(2,'0').split('').forEach(ch=>digs.push(+ch)));
+  });
+  return digs;
+}
+function renderRifa(dateStr){
+  const el=document.getElementById('rifa-section'); el.innerHTML='';
+  const labels=['Ayer','Hoy','Mañana'];
+  [-1,0,1].forEach((off,i)=>{
+    const d=new Date(dateStr+'T00:00:00');d.setDate(d.getDate()+off);
+    const b=d.getDate(),pad=n=>String(n).padStart(2,'0');
+    const card=document.createElement('div');
+    card.className='rifa-card'+(off===0?' today':'');
+    card.innerHTML=`<div class="rifa-day">${labels[i]}</div>
+      <span class="rifa-n">${pad(b)}</span>
+      <span class="rifa-n">${pad((b+33)%100)}</span>
+      <span class="rifa-n">${pad((b+66)%100)}</span>`;
+    el.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════
+   MULTIPLICACIÓN
+══════════════════════════════════ */
+function computeMulti(num){return[...String(num*333),...String(num*777)].map(Number);}
+function renderMultiplicacion(num,str){
+  document.getElementById('lbl333').textContent=`${str}  ×  333`;
+  document.getElementById('lbl777').textContent=`${str}  ×  777`;
+  drawMultiRow('res333',num*333);
+  drawMultiRow('res777',num*777);
+}
+function drawMultiRow(id,number){
+  const el=document.getElementById(id); el.innerHTML='';
+  const digits=String(number).split(''),len=digits.length;
+  const sep=()=>{const s=document.createElement('div');s.className='sep';el.appendChild(s);};
+  const add=(val,good)=>{const d=document.createElement('div');d.className=good?'mc hl':'lc';d.textContent=val;el.appendChild(d);};
+  if(len===7){add(digits[0],false);sep();digits.slice(1,4).forEach(d=>add(d,true));sep();digits.slice(4,7).forEach(d=>add(d,true));}
+  else if(len===8){add(digits[0],false);sep();digits.slice(1,4).forEach(d=>add(d,true));sep();digits.slice(4,7).forEach(d=>add(d,true));sep();add(digits[7],false);}
+  else{digits.forEach(d=>add(d,true));}
+}
+
+/* ══════════════════════════════════
+   GENERADOR
+══════════════════════════════════ */
+function setCifras(el){
+  document.querySelectorAll('.cifra-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); activeCifras=parseInt(el.dataset.val);
+}
+function generarNumeros(){
+  if(!methodDigitsPool.length){alert('Primero ingresa un número y pulsa "Atraer Suerte".');return;}
+  const n=activeCifras,res=[];
+  const nonZero=methodDigitsPool.filter(d=>d!==0);
+  const fp=nonZero.length?nonZero:methodDigitsPool;
+  for(let i=0;i<2;i++){
+    let num=String(fp[Math.floor(Math.random()*fp.length)]);
+    for(let j=1;j<n;j++)num+=methodDigitsPool[Math.floor(Math.random()*methodDigitsPool.length)];
+    res.push({val:num,type:'mth',tag:'✨ Del Método'});
+  }
+  for(let i=0;i<2;i++){
+    let num=String(1+Math.floor(Math.random()*9));
+    for(let j=1;j<n;j++)num+=Math.floor(Math.random()*10);
+    res.push({val:num,type:'rnd',tag:'🎲 Aleatorio'});
+  }
+  const el=document.getElementById('gen-results'); el.innerHTML='';
+  res.forEach(r=>{
+    const div=document.createElement('div');
+    div.className=`gen-item ${r.type}`;
+    div.innerHTML=`<div class="gen-tag">${r.tag}</div><div class="gen-num">${r.val}</div>`;
+    el.appendChild(div);
+  });
+}
+
+/* ══════════════════════════════════
+   CRUZ DE LA FORTUNA
+   Layout:
+     [emp] [d0]  [emp]
+     [d3]  [d2]  [d4]
+     [emp] [d1]  [emp]
+   Center = (d0+d1+d2+d3+d4) % 10
+   Diagonals:
+     NW=(d0+d3)%10  NE=(d0+d4)%10  SW=(d1+d3)%10  SE=(d1+d4)%10
+══════════════════════════════════ */
+function computeCruz(data){
+  const[d0,d1,d2,d3,d4]=data;
+  const cen=(d0+d1+d2+d3+d4)%10;
+  const NW=(d0+d3)%10,NE=(d0+d4)%10,SW=(d1+d3)%10,SE=(d1+d4)%10;
+  return{d0,d1,d2,d3,d4,cen,NW,NE,SW,SE};
+}
+function renderCruz(data,c){
+  // 3x3 visual cross (arms are original, center calc, corners are adjacent sums)
+  // Row 0: [NW] [d0] [NE]
+  // Row 1: [d3] [cen] [d4]
+  // Row 2: [SW] [d1] [SE]
+  const cells=[
+    {t:'calc',v:c.NW},{t:'orig',v:c.d0},{t:'calc',v:c.NE},
+    {t:'orig',v:c.d3},{t:'cen', v:c.cen},{t:'orig',v:c.d4},
+    {t:'calc',v:c.SW},{t:'orig',v:c.d1},{t:'calc',v:c.SE},
+  ];
+  const wrap=document.getElementById('cruz-wrap'); wrap.innerHTML='';
+  const grid=document.createElement('div'); grid.className='cruz-grid';
+  cells.forEach(({t,v})=>{
+    const d=document.createElement('div');
+    d.className=`cruz-cell ${t}`;
+    d.textContent=v;
+    grid.appendChild(d);
+  });
+  wrap.appendChild(grid);
+
+  // Legend row
+  const leg=document.createElement('div'); leg.className='cruz-legend';
+  leg.innerHTML=`
+    <div class="leg-i"><div class="leg-dot cor"></div>Original</div>
+    <div class="leg-i"><div class="leg-dot edg"></div>Diagonal calculada</div>
+    <div class="leg-i"><div class="leg-dot cen"></div>Centro (suma total)</div>`;
+  wrap.appendChild(leg);
+
+  document.getElementById('cruz-desc').innerHTML=
+    `Centro <strong style="color:var(--gold)">${c.cen}</strong> (suma de los 5 dígitos). `+
+    `Diagonales clave: <strong style="color:var(--gold-l)">NW=${c.NW} · NE=${c.NE} · SW=${c.SW} · SE=${c.SE}</strong>. `+
+    `Lee la cruz: los números en las esquinas son tus combinaciones complementarias de 2 cifras.`;
+}
+
+/* ══════════════════════════════════
+   TRIÁNGULO MAESTRO
+   Pure 5-digit pyramid (no date).
+   Each level: adjacent pairs mod 10.
+   Row 0 = original digits (green)
+   Final = gold circle.
+══════════════════════════════════ */
+function computeTriangulo(data){
+  const levels=[data.slice()];
+  let cur=data.slice();
+  while(cur.length>1){
+    cur=cur.slice(0,-1).map((v,i)=>m10(v,cur[i+1]));
+    levels.push(cur.slice());
+  }
+  return levels;
+}
+function renderTriangulo(data,levels){
+  const wrap=document.getElementById('tri-wrap'); wrap.innerHTML='';
+  levels.forEach((lvl,li)=>{
+    const row=document.createElement('div'); row.className='tri-row';
+    const isFinal=li===levels.length-1;
+    lvl.forEach((n,ci)=>{
+      const d=document.createElement('div');
+      d.className='tri-cell'+(li===0?' orig':isFinal?' fin':'');
+      d.textContent=n;
+      row.appendChild(d);
     });
-    return digs;
-}
-function renderRifa(dateStr) {
-    const el=document.getElementById('rifa-section'); el.innerHTML='';
-    const labels=['Ayer','Hoy','Mañana'];
-    [-1,0,1].forEach((off,i)=>{
-        const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+off);
-        const base=d.getDate(), pad=n=>String(n).padStart(2,'0');
-        const card=document.createElement('div');
-        card.className='rifa-card'+(off===0?' today':'');
-        card.innerHTML=`<div class="rifa-day">${labels[i]}</div>
-            <span class="rifa-num">${pad(base)}</span>
-            <span class="rifa-num">${pad((base+33)%100)}</span>
-            <span class="rifa-num">${pad((base+66)%100)}</span>`;
-        el.appendChild(card);
-    });
+    wrap.appendChild(row);
+  });
+  const fin=levels[levels.length-1][0];
+  document.getElementById('tri-meaning').innerHTML=
+    `<strong>Vértice Maestro: ${fin}</strong> — ${RED_MEANINGS[fin]||'Energía singular de los 5 dígitos puros.'}`;
 }
 
-/* ─── MULTIPLICACIÓN ─── */
-function computeMulti(num) {
-    return [...String(num*333),...String(num*777)].map(Number);
-}
-function renderMultiplicacion(num, str) {
-    document.getElementById('label-333').textContent=`${str}  ×  333`;
-    document.getElementById('label-777').textContent=`${str}  ×  777`;
-    drawMultiRow('res-333', num*333);
-    drawMultiRow('res-777', num*777);
-}
-function drawMultiRow(id, number) {
-    const el=document.getElementById(id); el.innerHTML='';
-    const digits=String(number).split(''), len=digits.length;
-    const sep=()=>{ const s=document.createElement('div'); s.className='separator'; el.appendChild(s); };
-    const add=(val,good)=>{ const d=document.createElement('div'); d.className=good?'multi-cell hl':'lagging-cell'; d.textContent=val; el.appendChild(d); };
-    if(len===7){ add(digits[0],false); sep(); digits.slice(1,4).forEach(d=>add(d,true)); sep(); digits.slice(4,7).forEach(d=>add(d,true)); }
-    else if(len===8){ add(digits[0],false); sep(); digits.slice(1,4).forEach(d=>add(d,true)); sep(); digits.slice(4,7).forEach(d=>add(d,true)); sep(); add(digits[7],false); }
-    else { digits.forEach(d=>add(d,true)); }
+/* ══════════════════════════════════
+   SERVICE WORKER (PWA offline)
+══════════════════════════════════ */
+if('serviceWorker' in navigator){
+  const swCode=`
+const CACHE='suerte-tris-v1';
+const ASSETS=['./', './index.html'];
+self.addEventListener('install',e=>e.waitUntil(
+  caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())
+));
+self.addEventListener('activate',e=>e.waitUntil(
+  caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+    .then(()=>self.clients.claim())
+));
+self.addEventListener('fetch',e=>e.respondWith(
+  caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('./')))
+));`;
+  try{
+    const blob=new Blob([swCode],{type:'application/javascript'});
+    const swURL=URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swURL,{scope:'./'}).catch(()=>{});
+  }catch(e){}
 }
 
-/* ─── GENERADOR ─── */
-function generarNumeros() {
-    if(!methodDigitsPool.length){ alert('Primero ingresa un número y pulsa "Atraer Suerte".'); return; }
-    const n=activeCifras, res=[];
-    const nonZero=methodDigitsPool.filter(d=>d!==0);
-    const firstPool=nonZero.length?nonZero:methodDigitsPool;
 
-    // 2 from method digits
-    for(let i=0;i<2;i++){
-        let num=String(firstPool[Math.floor(Math.random()*firstPool.length)]);
-        for(let j=1;j<n;j++) num+=methodDigitsPool[Math.floor(Math.random()*methodDigitsPool.length)];
-        res.push({val:num,type:'from-method',tag:'✨ Del Método'});
+async function compartirWA(){
+  const raw=document.getElementById('trisInput').value.trim();
+  const red=document.getElementById('red-meaning').textContent;
+  const text=`🍀 *Suerte Tris* — Análisis del ${raw}\n\n${red.slice(0,80)}\n\n✨ Generado con _Suerte Tris_ por DanKing92`;
+  try{
+    const canvas=await html2canvas(document.getElementById('capture-area'),{scale:2,backgroundColor:currentTheme==='dark'?'#0c1f12':'#ffffff',logging:false,useCORS:true});
+    const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
+    const file=new File([blob],'suerte-tris.png',{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({title:'Suerte Tris',text,files:[file]});return;
     }
-    // 2 random
-    for(let i=0;i<2;i++){
-        let num=String(1+Math.floor(Math.random()*9));
-        for(let j=1;j<n;j++) num+=Math.floor(Math.random()*10);
-        res.push({val:num,type:'random-pick',tag:'🎲 Aleatorio'});
+  }catch(e){}
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');
+}
+
+/* ══════════════════════════════════
+   DOWNLOAD IMAGE
+══════════════════════════════════ */
+function descargarImagen(){
+  const btn=document.getElementById('btn-download');
+  btn.textContent='⏳ Generando...';btn.disabled=true;
+  html2canvas(document.getElementById('capture-area'),{
+    scale:2.5,backgroundColor:currentTheme==='dark'?'#0c1f12':'#ffffff',
+    logging:false,useCORS:true,allowTaint:true
+  }).then(canvas=>{
+    const link=document.createElement('a');
+    link.download=`SuerteTris_${lastTrisNum||'amuleto'}_${new Date().toISOString().slice(0,10)}.png`;
+    link.href=canvas.toDataURL('image/png');link.click();
+    btn.innerHTML='📸 &nbsp;Guardar como Imagen';btn.disabled=false;
+  }).catch(()=>{alert('Error al generar imagen');btn.innerHTML='📸 &nbsp;Guardar como Imagen';btn.disabled=false;});
+}
+
+/* ══════════════════════════════════
+   HISTORY
+══════════════════════════════════ */
+function getHistory(){ try{return JSON.parse(localStorage.getItem('st_history')||'[]');}catch{return[];} }
+function saveHistory(entry){
+  const h=getHistory();
+  h.unshift(entry);
+  if(h.length>30)h.splice(30);
+  localStorage.setItem('st_history',JSON.stringify(h));
+}
+function deleteHistItem(id){
+  const h=getHistory().filter(e=>e.id!==id);
+  localStorage.setItem('st_history',JSON.stringify(h));
+  renderHistorial();
+}
+function clearHistory(){
+  if(!confirm('¿Limpiar todo el historial?'))return;
+  localStorage.removeItem('st_history');
+  renderHistorial();
+  renderFrecuencia();
+}
+function renderHistorial(){
+  const el=document.getElementById('hist-list'); el.innerHTML='';
+  const h=getHistory();
+  if(!h.length){el.innerHTML='<div class="hist-empty">Aún no hay análisis guardados.<br>Haz tu primer cálculo en la pestaña 🍀</div>';return;}
+  h.forEach(e=>{
+    const div=document.createElement('div'); div.className='hist-item';
+    div.innerHTML=`
+      <div class="hist-top">
+        <span class="hist-num">${e.trisNum}</span>
+        <span class="hist-date">${e.savedAt}</span>
+      </div>
+      <div class="hist-pills">
+        <span class="pill pill-g">Esencia: ${e.esencia}</span>
+        <span class="pill pill-g">Escalera: ${e.escFinal}</span>
+        <span class="pill pill-g">Diamante: ${e.diamCen}</span>
+        <span class="pill pill-gr">Gato 1 centro: ${e.gatoC1}</span>
+        <span class="pill pill-gr">Gato 2 centro: ${e.gatoC2}</span>
+      </div>
+      <div class="hist-actions">
+        <button class="btn-danger" onclick="deleteHistItem(${e.id})">🗑 Eliminar</button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+/* ══════════════════════════════════
+   FRECUENCIA
+══════════════════════════════════ */
+function renderFrecuencia(){
+  const el=document.getElementById('freq-content'); el.innerHTML='';
+  const h=getHistory();
+  if(!h.length){el.innerHTML='<div class="freq-empty">Aún no hay análisis.<br>Haz tu primer cálculo en la pestaña 🍀</div>';return;}
+
+  // Aggregate
+  const counts=Array(10).fill(0);
+  let total=0;
+  h.forEach(e=>(e.allDigits||[]).forEach(d=>{if(d>=0&&d<=9){counts[d]++;total++;}}));
+
+  // Summary
+  const sorted=[...counts].map((c,i)=>({d:i,c})).sort((a,b)=>b.c-a.c);
+  const topDigits=sorted.slice(0,3).map(x=>x.d).join(', ');
+  const lowDigits=sorted.slice(-3).map(x=>x.d).join(', ');
+  const maxCount=Math.max(...counts)||1;
+
+  const summary=document.createElement('div'); summary.className='freq-summary';
+  summary.innerHTML=`
+    <div class="freq-sum-item"><div class="freq-sum-label">Análisis</div><div class="freq-sum-val">${h.length}</div></div>
+    <div class="freq-sum-item"><div class="freq-sum-label">Más frecuentes</div><div class="freq-sum-val" style="font-size:.9rem">${topDigits}</div></div>
+    <div class="freq-sum-item"><div class="freq-sum-label">Menos frecuentes</div><div class="freq-sum-val" style="font-size:.9rem;color:var(--ts)">${lowDigits}</div></div>`;
+  el.appendChild(summary);
+
+  const card=document.createElement('div'); card.className='card';
+  const title=document.createElement('div'); title.className='sec-title'; title.textContent='📊 Distribución de Dígitos';
+  card.appendChild(title);
+  const wrap=document.createElement('div'); wrap.className='freq-bar-wrap';
+  counts.forEach((c,d)=>{
+    const pct=total?Math.round(c/total*100):0;
+    const isTop=sorted.findIndex(x=>x.d===d)<3;
+    const row=document.createElement('div'); row.className='freq-row';
+    row.innerHTML=`
+      <div class="freq-digit">${d}</div>
+      <div class="freq-bar-bg"><div class="freq-bar-fill${isTop?' top':''}" style="width:${total?Math.round(c/maxCount*100):0}%"></div></div>
+      <span class="freq-pct">${pct}%</span>
+      <span class="freq-count">${c}</span>`;
+    wrap.appendChild(row);
+  });
+  card.appendChild(wrap);
+  el.appendChild(card);
+}
+
+/* ══════════════════════════════════
+   NUMEROLOGÍA PERSONAL
+══════════════════════════════════ */
+const LIFE_MEANINGS = {
+  1:{name:'El Líder',desc:'Eres pionero/a, independiente y con gran determinación. Tu energía atrae la originalidad y el emprendimiento.',lucky:[1,10,19,28]},
+  2:{name:'El Diplomático',desc:'Sensitivo/a, cooperador/a y paciente. Tienes don para las relaciones y la mediación.',lucky:[2,11,20,29]},
+  3:{name:'El Creativo',desc:'Expresivo/a, alegre y comunicativo/a. La creatividad fluye en ti naturalmente.',lucky:[3,12,21,30]},
+  4:{name:'El Constructor',desc:'Práctico/a, disciplinado/a y confiable. Construyes con trabajo sólido y constancia.',lucky:[4,13,22,31]},
+  5:{name:'El Aventurero',desc:'Libre, dinámico/a y versátil. Los cambios son tu medio para crecer y prosperar.',lucky:[5,14,23,32]},
+  6:{name:'El Armonizador',desc:'Amoroso/a, responsable y protector/a. Tu hogar y seres queridos son tu centro.',lucky:[6,15,24,33]},
+  7:{name:'El Sabio',desc:'Analítico/a, introspectivo/a y espiritual. Buscas la verdad detrás de las cosas.',lucky:[7,16,25,34]},
+  8:{name:'El Abundante',desc:'Ambicioso/a, poderoso/a y orientado/a al logro material y el éxito.',lucky:[8,17,26,35]},
+  9:{name:'El Compasivo',desc:'Humanitario/a, sabio/a y en constante transformación. Eres el cierre de los ciclos.',lucky:[9,18,27,36]},
+  11:{name:'El Iluminado (Maestro 11)',desc:'Intuición elevada, espiritualidad y visión profética. Número maestro de gran potencial.',lucky:[11,2,20,29],master:true},
+  22:{name:'El Constructor Maestro (22)',desc:'Capaz de transformar grandes sueños en realidad tangible. El más poderoso de los maestros.',lucky:[22,4,13,31],master:true},
+  33:{name:'El Maestro Compasivo (33)',desc:'Maestra compasión, enseñanza y sanación. Número de servicio elevado a los demás.',lucky:[33,6,15,24],master:true},
+};
+
+function reduceToLifePath(dateStr){
+  const digits=dateStr.replace(/-/g,'').split('').map(Number);
+  const chain=[{label:dateStr.replace(/-/g,'+'),sum:digits.reduce((a,b)=>a+b,0)}];
+  let cur=chain[0].sum;
+  while(cur>9&&cur!==11&&cur!==22&&cur!==33){
+    const digs=String(cur).split('').map(Number);
+    const next=digs.reduce((a,b)=>a+b,0);
+    chain.push({label:digs.join('+'),sum:next});
+    cur=next;
+  }
+  return{chain,final:cur};
+}
+
+function calcPersonal(){
+  const birthStr=document.getElementById('birthDate').value;
+  if(!birthStr)return;
+  const trisStr=document.getElementById('persTrisTxt').value.trim();
+
+  const{chain,final}=reduceToLifePath(birthStr);
+  const info=LIFE_MEANINGS[final]||LIFE_MEANINGS[final%9||9];
+  const birthDate=new Date(birthStr+'T00:00:00');
+  const day=birthDate.getDate();
+  const dayNum=day>9?String(day).split('').map(Number).reduce((a,b)=>a+b,0):day;
+
+  let html=`
+    <div class="card">
+      <div class="sec-title">🔢 Tu Número de Vida</div>
+      <div class="chain-wrap">`;
+  chain.forEach((s,i)=>{
+    if(i>0)html+=`<span class="chain-arrow">→</span>`;
+    const isFinal=i===chain.length-1;
+    html+=`<span class="chain-step${isFinal?' chain-final':''}">${s.label}=${s.sum}</span>`;
+  });
+  html+=`</div>
+      <div class="num-result-card">
+        <div class="num-big">${final}</div>
+        <div class="num-name">${info.name}</div>
+        ${info.master?`<div class="num-master">⭐ Número Maestro</div>`:''}
+        <div class="num-meaning">${info.desc}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">🎯 Número del Día de Nacimiento</div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="text-align:center;min-width:64px">
+          <div class="num-big" style="font-size:2.5rem">${dayNum}</div>
+          <div class="num-name">Día ${day}</div>
+        </div>
+        <div style="font-size:.72rem;color:var(--ts);line-height:1.6;flex:1">
+          ${day} → Número ${dayNum}.<br>
+          Números de suerte del día: <strong style="color:var(--gold)">${info.lucky.slice(0,4).join(', ')}</strong>
+        </div>
+      </div>
+    </div>`;
+
+  if(trisStr.length===5&&!isNaN(trisStr)){
+    const trisDigits=trisStr.split('').map(Number);
+    const matches=trisDigits.filter(d=>d===final||d===dayNum);
+    html+=`<div class="card">
+      <div class="sec-title">💫 Compatibilidad con Tris ${trisStr}</div>
+      <div class="num-compat">
+        ${matches.length
+          ?`Tu número de vida <strong>${final}</strong> aparece <strong>${matches.length} veces</strong> en el número ${trisStr}. ¡Señal de conexión numerológica positiva!<br><br>Dígitos en común: <strong>${[...new Set(matches)].join(', ')}</strong>`
+          :`Tu número de vida (${final}) no aparece directamente, pero la energía del ${trisStr} en suma es <strong>${computeReduccion(trisDigits).final}</strong>. ${computeReduccion(trisDigits).final===final?'¡Coincide con tu esencia!':'La energía es complementaria.'}`}
+      </div>
+    </div>`;
+  }
+
+  const el=document.getElementById('pers-results');
+  el.innerHTML=html; el.style.display='block';
+}
+
+/* ══════════════════════════════════
+   SORTEOS + NOTIFICACIONES
+══════════════════════════════════ */
+const SORTEOS=[
+  {id:'mediodia',name:'Tris Mediodía',icon:'🌞',hour:13,min:0},
+  {id:'tres',name:'Tris De Las Tres',icon:'🕒',hour:15,min:0},
+  {id:'extra',name:'Tris Extra',icon:'⭐',hour:17,min:0},
+  {id:'siete',name:'Tris De Las Siete',icon:'🌙',hour:19,min:0},
+  {id:'clasico',name:'Tris Clásico',icon:'🏆',hour:21,min:0},
+];
+
+function getNotifEnabled(){try{return JSON.parse(localStorage.getItem('st_notif')||'{}');}catch{return{};}}
+function setNotifEnabled(id,val){const n=getNotifEnabled();n[id]=val;localStorage.setItem('st_notif',JSON.stringify(n));}
+
+async function requestNotifPerm(){
+  if(!('Notification' in window)){alert('Tu navegador no soporta notificaciones.');return;}
+  const perm=await Notification.requestPermission();
+  if(perm==='granted'){
+    document.getElementById('notif-status').textContent='✅ Notificaciones activas. Activa cada sorteo individualmente.';
+    document.getElementById('notif-perm-btn').textContent='✅ Activas';
+    document.getElementById('notif-perm-btn').disabled=true;
+    renderSorteos();
+  }else{
+    document.getElementById('notif-status').textContent='⚠️ Permiso denegado. Actívalo desde la configuración del navegador.';
+  }
+}
+
+function timeUntil(hour,min){
+  const now=new Date();
+  const target=new Date(now);
+  target.setHours(hour,min,0,0);
+  return target-now;
+}
+
+function formatTimeLeft(ms){
+  if(ms<=0)return null;
+  const totalMin=Math.floor(ms/60000);
+  const h=Math.floor(totalMin/60),m=totalMin%60;
+  if(h>0)return`${h}h ${m}m`;
+  return`${m} min`;
+}
+
+let sorteoTimers={};
+function toggleSorteoNotif(id){
+  const s=SORTEOS.find(x=>x.id===id);
+  if(!s)return;
+  if(Notification.permission!=='granted'){alert('Primero activa los permisos de notificación.');return;}
+  const enabled=getNotifEnabled();
+  if(enabled[id]){
+    setNotifEnabled(id,false);
+    if(sorteoTimers[id]){clearTimeout(sorteoTimers[id]);delete sorteoTimers[id];}
+  }else{
+    const msToAlert=timeUntil(s.hour,s.min)-(15*60*1000);
+    if(msToAlert<=0){alert('Este sorteo ya está próximo o ha pasado.');return;}
+    setNotifEnabled(id,true);
+    sorteoTimers[id]=setTimeout(()=>{
+      new Notification(`${s.icon} ${s.name} en 15 minutos`,{
+        body:`El sorteo comienza a las ${s.hour}:00. ¡Prepara tus números de suerte!`,
+        tag:id
+      });
+      setNotifEnabled(id,false);
+    },msToAlert);
+  }
+  renderSorteos();
+}
+
+function renderSorteos(){
+  const el=document.getElementById('sorteos-list'); el.innerHTML='';
+  const now=new Date();
+  const enabled=getNotifEnabled();
+  let nextFound=false;
+
+  const permGranted=typeof Notification!=='undefined'&&Notification.permission==='granted';
+  if(permGranted){
+    document.getElementById('notif-status').textContent='✅ Notificaciones activas. Toca 🔔 en cada sorteo para activar recordatorio.';
+    document.getElementById('notif-perm-btn').textContent='✅ Activas';
+    document.getElementById('notif-perm-btn').disabled=true;
+  }
+
+  SORTEOS.forEach(s=>{
+    const ms=timeUntil(s.hour,s.min);
+    const passed=ms<=0;
+    const isNext=!passed&&!nextFound;
+    if(!passed)nextFound=true;
+
+    const div=document.createElement('div');
+    div.className='sorteo-card'+(passed?' passed':isNext?' next':'');
+
+    const timeLeft=formatTimeLeft(ms);
+    const timeStr=`${s.hour}:00 PM`.replace('13:00 PM','1:00 PM').replace('15:00 PM','3:00 PM').replace('17:00 PM','5:00 PM').replace('19:00 PM','7:00 PM').replace('21:00 PM','9:00 PM');
+
+    let notifHTML='';
+    if(!passed){
+      const isOn=!!enabled[s.id];
+      notifHTML=`<button class="notif-btn ${isOn?'on':'off'}" onclick="toggleSorteoNotif('${s.id}')">
+        ${isOn?'🔔 ON':'🔕 OFF'}
+      </button>`;
+    }else{
+      notifHTML=`<span class="notif-btn passed">✓ Pasado</span>`;
     }
 
-    const el=document.getElementById('gen-results'); el.innerHTML='';
-    res.forEach(r=>{
-        const div=document.createElement('div');
-        div.className=`gen-item ${r.type}`;
-        div.innerHTML=`<div class="gen-tag">${r.tag}</div><div class="gen-number">${r.val}</div>`;
-        el.appendChild(div);
-    });
+    div.innerHTML=`
+      <div class="sorteo-icon">${s.icon}</div>
+      <div class="sorteo-info">
+        <div class="sorteo-name">${s.name}</div>
+        <div class="sorteo-time">${timeStr}</div>
+        ${timeLeft?`<div class="sorteo-countdown">Faltan ${timeLeft} ${isNext?'— 🔥 ¡PRÓXIMO!':''}</div>`:'<div class="sorteo-countdown">Sorteo del día concluido</div>'}
+      </div>
+      ${notifHTML}`;
+    el.appendChild(div);
+  });
+
+  // Auto-refresh countdown every 60s
+  if(window._sorteoInterval)clearInterval(window._sorteoInterval);
+  window._sorteoInterval=setInterval(()=>{
+    if(document.getElementById('t-sort').classList.contains('active'))renderSorteos();
+  },60000);
 }
 
-/* ─── RECOMENDACIONES ─── */
-function toggleRecs() {
-    document.getElementById('recsBody').classList.toggle('open');
-    document.getElementById('recsBtn').classList.toggle('open');
+/* ══════════════════════════════════
+   RECOMMENDATIONS
+══════════════════════════════════ */
+const RECS=[
+  {ico:'🌐',title:'Consulta Automática del Resultado',desc:'Obtener el último número Tris vía API oficial, sin ingresarlo manualmente.',badge:'b-p',bl:'Avanzado'},
+  {ico:'📈',title:'Análisis de Racha y Patrones',desc:'Detectar dígitos que se repiten en múltiples sorteos consecutivos y alertar al usuario.',badge:'b-n',bl:'Idea'},
+  {ico:'🤖',title:'Predicción con IA',desc:'Conectar con un modelo de IA para analizar el historial y sugerir combinaciones con mayor probabilidad estadística.',badge:'b-p',bl:'Avanzado'},
+  {ico:'📤',title:'Exportar Historial (PDF/CSV)',desc:'Generar un reporte del historial de análisis con todos los métodos en formato descargable.',badge:'b-n',bl:'Idea'},
+  {ico:'🔗',title:'Sincronización entre Dispositivos',desc:'Guardar el historial en la nube (Firebase / Supabase) para acceder desde cualquier dispositivo con un código.',badge:'b-p',bl:'Avanzado'},
+  {ico:'🎯',title:'Modo Multi-Tris',desc:'Analizar simultáneamente varios números del día (Classic, Mediodía, etc.) en una sola pantalla comparativa.',badge:'b-n',bl:'Idea'},
+  {ico:'📲',title:'Compartir en Telegram y Facebook',desc:'Botones adicionales de compartir la imagen del amuleto en otras redes sociales.',badge:'b-n',bl:'Idea'},
+  {ico:'🌙',title:'Tema Automático por Hora',desc:'El modo oscuro se activa automáticamente después de las 7 PM y el claro a las 7 AM.',badge:'b-n',bl:'Idea'},
+  {ico:'🗓️',title:'Estadísticas de Aciertos Personales',desc:'El usuario marca cuándo ganó y la app lleva estadísticas de efectividad de cada método.',badge:'b-n',bl:'Idea'},
+  {ico:'🎪',title:'Mini Juego de Predicción',desc:'Antes de ver el resultado oficial, el usuario hace su predicción y la app lleva un récord de sus aciertos.',badge:'b-h',bl:'Experimental'},
+  {ico:'💬',title:'Widget de Compartir con Imagen Animada',desc:'Plantillas animadas para Stories de Instagram y WhatsApp con el número del día y tus resultados.',badge:'b-p',bl:'Avanzado'},
+  {ico:'🔔',title:'Alerta de Resultado Reciente',desc:'Detectar si el número ingresado coincide con un sorteo reciente y mostrar un aviso de verificación.',badge:'b-n',bl:'Idea'},
+  {ico:'📊',title:'Gráfica Histórica de Dígitos',desc:'Visualización de tendencias con gráfica de línea que muestra qué dígitos dominaron en los últimos 10, 20 y 30 análisis.',badge:'b-n',bl:'Idea'},
+  {ico:'🎨',title:'Personalización de Amuleto',desc:'Permitir al usuario elegir un color base, emoji y frase personalizada para la imagen generada.',badge:'b-n',bl:'Idea'},
+  {ico:'📦',title:'Widget en Pantalla de Inicio (Android)',desc:'Widget nativo de Android que muestra el próximo sorteo y el último número analizado sin abrir la app.',badge:'b-p',bl:'Avanzado'},
+  {ico:'🌎',title:'Soporte Multi-Lotería',desc:'Extender la app para analizar también resultados de Melate Retro, Chispazo y Ganador Triple.',badge:'b-p',bl:'Avanzado'},
+  {ico:'🔐',title:'Modo Privado con PIN',desc:'Proteger el historial con un PIN o huella dactilar para mayor privacidad.',badge:'b-n',bl:'Idea'},
+  {ico:'🧩',title:'Selector de Métodos Activos',desc:'El usuario elige qué métodos quiere ver en los resultados, ocultando los que no le interesan.',badge:'b-n',bl:'Idea'},
+];
+function renderRecs(){
+  const el=document.getElementById('recs-list'); el.innerHTML='';
+  RECS.forEach(r=>{
+    el.innerHTML+=`<div class="rec-item">
+      <span class="rec-ico">${r.ico}</span>
+      <div class="rec-text">
+        <div class="rec-title">${r.title}</div>
+        <div class="rec-desc">${r.desc}</div>
+      </div>
+      <span class="badge ${r.badge}">${r.bl}</span>
+    </div>`;
+  });
+}
+function toggleRecs(){
+  document.getElementById('recsBody').classList.toggle('open');
+  document.getElementById('recsBtn').classList.toggle('open');
 }
 
-/* ─── DESCARGA ─── */
-function descargarImagen() {
-    const btn=document.getElementById('btn-download');
-    btn.textContent='⏳  Generando...'; btn.disabled=true;
-    html2canvas(document.getElementById('capture-area'),{
-        scale:2.5,
-        backgroundColor:currentTheme==='dark'?'#0c1f12':'#ffffff',
-        logging:false, useCORS:true, allowTaint:true
-    }).then(canvas=>{
-        const link=document.createElement('a');
-        const raw=document.getElementById('trisInput').value||'tris';
-        link.download=`SuerteTris_${raw}_${new Date().toISOString().slice(0,10)}.png`;
-        link.href=canvas.toDataURL('image/png'); link.click();
-        btn.innerHTML='📸 &nbsp;Guardar Amuleto como Imagen'; btn.disabled=false;
-    }).catch(()=>{ alert('Error al generar imagen'); btn.innerHTML='📸 &nbsp;Guardar Amuleto como Imagen'; btn.disabled=false; });
-}
+// ── Init after all declarations ──
+renderRecs();
+renderSorteos();
+renderHistorial();
+renderFrecuencia();
 </script>
 </body>
 </html>
