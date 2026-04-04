@@ -45,7 +45,7 @@ body{
   font-family:'Nunito',sans-serif;background:var(--bg);
   background-image:radial-gradient(ellipse at 15% 5%,rgba(39,174,96,.07) 0,transparent 45%),
     radial-gradient(ellipse at 85% 90%,rgba(232,185,35,.05) 0,transparent 45%);
-  min-height:100vh;color:var(--tx);padding-bottom:90px;
+  min-height:100vh;color:var(--tx);padding-bottom:100px;
   overscroll-behavior-y:none;transition:background .3s,color .3s;
 }
 .wrap{max-width:520px;margin:0 auto;padding:0 12px}
@@ -68,7 +68,7 @@ body{
 }
 
 /* ═══ TABS ═══ */
-.tab-panel{display:none;padding:0 12px 28px;max-width:520px;margin:0 auto}
+.tab-panel{display:none;padding:0 12px 44px;max-width:520px;margin:0 auto}
 .tab-panel.active{display:block}
 
 /* ═══ BOTTOM NAV ═══ */
@@ -561,6 +561,42 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1)
 .ai-dot:nth-child(3){animation-delay:.3s}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
+/* ═══ RACHA Y PATRONES ═══ */
+.racha-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.racha-box{background:var(--bgi);border:1.5px solid var(--bd);border-radius:12px;padding:12px 10px;text-align:center}
+.racha-box.hot{border-color:rgba(231,76,60,.4);background:rgba(231,76,60,.06)}
+.racha-box.cold{border-color:rgba(41,128,185,.4);background:rgba(41,128,185,.06)}
+.racha-box.streak{border-color:var(--gold-d);background:rgba(232,185,35,.07)}
+.racha-box-title{font-size:.58rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;margin-bottom:7px}
+.racha-box.hot .racha-box-title{color:#e74c3c}
+.racha-box.cold .racha-box-title{color:#2980b9}
+.racha-box.streak .racha-box-title{color:var(--gold)}
+.racha-digits{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.racha-digit{
+  width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:900;
+}
+.racha-digit.hot{background:rgba(231,76,60,.2);color:#e74c3c;border:1.5px solid rgba(231,76,60,.4)}
+.racha-digit.cold{background:rgba(41,128,185,.18);color:#2980b9;border:1.5px solid rgba(41,128,185,.35)}
+.racha-digit.neu{background:var(--bgi);color:var(--ts);border:1px solid var(--bd)}
+.esencia-trail{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:4px}
+.es-chip{
+  width:32px;height:32px;border-radius:50%;background:var(--bgi);border:1.5px solid var(--gold-d);
+  display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;
+  font-size:.88rem;font-weight:900;color:var(--gold-l);
+}
+.es-chip.last{background:var(--gold);color:#0a1f05;box-shadow:var(--glow-g)}
+.racha-combo{
+  display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap;
+}
+.racha-num-chip{
+  padding:9px 14px;background:linear-gradient(135deg,rgba(232,185,35,.15),rgba(232,185,35,.08));
+  border:1.5px solid var(--gold-d);border-radius:10px;
+  font-family:'Cinzel',serif;font-size:1.15rem;font-weight:900;color:var(--gold-l);
+  letter-spacing:3px;
+}
+.racha-empty{text-align:center;color:var(--ts);font-size:.78rem;padding:24px 0;opacity:.6}
+
 /* ═══ EXPORT BUTTONS (historial) ═══ */
 .export-row{display:flex;gap:8px;margin-bottom:12px}
 .btn-export{
@@ -787,9 +823,17 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1)
 <div class="tab-panel" id="t-freq">
   <div class="wrap">
     <div class="page-hdr">
-      <h2>📊 Frecuencia</h2>
-      <p>Dígitos más frecuentes en tus análisis</p>
+      <h2>📊 Frecuencia &amp; Racha</h2>
+      <p>Patrones, tendencias y dígitos calientes</p>
     </div>
+
+    <!-- RACHA Y PATRONES -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="sec-title">🔥 Racha y Patrones</div>
+      <div id="racha-content"><div class="racha-empty">Genera análisis en la pestaña 🍀 para ver patrones</div></div>
+    </div>
+
+    <!-- FRECUENCIA -->
     <div id="freq-content"></div>
   </div>
 </div>
@@ -916,7 +960,7 @@ function showTab(name, btn) {
   document.getElementById('t-' + name).classList.add('active');
   btn.classList.add('active');
   if(name === 'hist') renderHistorial();
-  if(name === 'freq') renderFrecuencia();
+  if(name === 'freq') { renderFrecuencia(); renderRacha(); }
   if(name === 'sort') renderSorteos();
 }
 
@@ -1307,42 +1351,75 @@ async function compartirWA(){
 
 /* ══════════════════════════════════
    FETCH ÚLTIMO RESULTADO TRIS
+   Tries multiple CORS proxies & URLs,
+   looks for 5-digit numbers in context.
 ══════════════════════════════════ */
 async function fetchUltimoResultado(){
   const btn=document.getElementById('btn-fetch');
   btn.classList.add('loading');
   btn.textContent='⏳  Consultando...';
-  try{
-    const proxies=[
-      'https://api.allorigins.win/raw?url='+encodeURIComponent('https://www.lotenal.gob.mx/boletines/tris.json'),
-      'https://corsproxy.io/?'+encodeURIComponent('https://www.lotenal.gob.mx/boletines/tris.json'),
-    ];
-    let found=false;
-    for(const url of proxies){
+
+  // Known Lotería Nacional result URLs
+  const targets=[
+    'https://www.lotenal.gob.mx/resultados/tris',
+    'https://resultados.lotenal.gob.mx/',
+    'https://www.lotenal.gob.mx/',
+    'https://www.lotenal.gob.mx/sorteo/resultado',
+  ];
+
+  // Proxy factories: allorigins /get returns JSON{contents:...}; others return raw text
+  const proxyFns=[
+    u=>`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  ];
+
+  // Regex patterns ordered by specificity
+  const PATS=[
+    /resultado[^\d]{0,40}(\d{5})/i,
+    /ganador[^\d]{0,40}(\d{5})/i,
+    /tris[^\d]{0,60}(\d{5})/i,
+    /combinaci[oó]n[^\d]{0,30}(\d{5})/i,
+    />(\d{5})</,
+    /"(\d{5})"/,
+    /\b([1-9]\d{4})\b/,   // 5-digit non-zero start
+  ];
+
+  let found=false;
+  outer: for(const proxyFn of proxyFns){
+    for(const target of targets){
       try{
-        const res=await fetch(url,{signal:AbortSignal.timeout(6000)});
-        if(!res.ok)continue;
-        const text=await res.text();
-        const match=text.match(/\b(\d{5})\b/);
-        if(match){
-          document.getElementById('trisInput').value=match[1];
-          btn.textContent=`✅ Resultado: ${match[1]}`;
-          found=true;break;
+        const url=proxyFn(target);
+        const r=await fetch(url,{signal:AbortSignal.timeout(9000)});
+        if(!r.ok) continue;
+        let html='';
+        const ct=r.headers.get('content-type')||'';
+        if(ct.includes('json')){
+          const j=await r.json();
+          html=j.contents||j.body||JSON.stringify(j);
+        }else{
+          html=await r.text();
+        }
+        for(const pat of PATS){
+          const m=html.match(pat);
+          if(m&&m[1]){
+            document.getElementById('trisInput').value=m[1];
+            btn.textContent=`✅ Cargado: ${m[1]}`;
+            found=true;
+            break outer;
+          }
         }
       }catch(e){continue;}
     }
-    if(!found){
-      btn.textContent='⚠️ No disponible — ingresa manualmente';
-      setTimeout(()=>{btn.textContent='🌐  Consultar Último Resultado';btn.classList.remove('loading');},3500);
-      return;
-    }
-  }catch(e){
-    btn.textContent='❌ Error de conexión';
-    setTimeout(()=>{btn.textContent='🌐  Consultar Último Resultado';btn.classList.remove('loading');},3500);
-    return;
   }
+
   btn.classList.remove('loading');
-  setTimeout(()=>{btn.textContent='🌐  Consultar Último Resultado';},4000);
+  if(!found){
+    btn.textContent='⚠️ No disponible — ingresa manualmente';
+    setTimeout(()=>{btn.textContent='🌐  Consultar Último Resultado';},4500);
+  }else{
+    setTimeout(()=>{btn.textContent='🌐  Consultar Último Resultado';},5500);
+  }
 }
 
 /* ══════════════════════════════════
@@ -1406,43 +1483,208 @@ function descargarImagen(){
 }
 
 /* ══════════════════════════════════
-   AI PREDICTION
+   AI PREDICTION — tries Anthropic API,
+   falls back to local statistical analysis
 ══════════════════════════════════ */
 async function predecirConIA(){
   const raw=document.getElementById('trisInput').value.trim();
   const h=getHistory();
-  if(!raw&&!h.length){alert('Ingresa un número o genera historial primero.');return;}
+  if(!raw&&!h.length){alert('Ingresa un número Tris o genera historial primero.');return;}
+
   const btn=document.getElementById('btn-ai');
   const res=document.getElementById('ai-result');
   btn.disabled=true;
-  res.style.display='block';res.classList.remove('visible');
-  res.innerHTML=`<div class="ai-thinking"><div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>IA analizando patrones...</span></div>`;
-  const histRes=h.slice(0,10).map(e=>`${e.trisNum}(esencia:${e.esencia},esc:${e.escFinal})`).join(', ');
-  const metodo=document.getElementById('red-meaning')?.textContent||'';
-  const prompt=`Eres un asistente de numerología para el juego "Tris" de México (5 dígitos del 0-9).
-Historial: ${histRes||'sin historial'}.
-Número actual: ${raw||'no especificado'}. Reducción: ${metodo.slice(0,80)}.
-Sugiere 4 combinaciones de 5 dígitos basadas en patrones numerológicos.
-Responde SOLO en JSON sin markdown: {"nums":["12345","67890","11111","22222"],"analisis":"Explicación máx 90 palabras en español."}`;
+  res.style.display='block'; res.classList.remove('visible');
+  res.innerHTML=`<div class="ai-thinking"><div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>Analizando patrones...</span></div>`;
+
+  let resultado=null;
+  let source='local';
+
+  // 1. Try real Anthropic API (works in Claude.ai context)
   try{
+    const histRes=h.slice(0,10).map(e=>`${e.trisNum}(esencia:${e.esencia},esc:${e.escFinal})`).join(', ');
+    const metodo=document.getElementById('red-meaning')?.textContent?.slice(0,80)||'';
+    const prompt=`Eres asistente de numerología para el juego "Tris" de México (5 dígitos 0-9).
+Historial reciente: ${histRes||'sin historial'}. Número actual: ${raw||'N/A'}. Reducción: ${metodo}.
+Sugiere 4 combinaciones de 5 dígitos basadas en patrones numerológicos del historial.
+Responde ÚNICAMENTE en JSON sin markdown: {"nums":["12345","67890","11223","44556"],"analisis":"Explicación en español máx 90 palabras."}`;
     const apiRes=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:450,messages:[{role:'user',content:prompt}]}),
+      signal:AbortSignal.timeout(18000)
     });
-    const data=await apiRes.json();
-    const text=(data.content||[]).map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(text);
-    const nums=(parsed.nums||[]).slice(0,4);
-    res.innerHTML=`
-      <p style="font-size:.65rem;color:#a855f7;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🔮 Combinaciones sugeridas por IA:</p>
-      <div class="ai-nums">${nums.map(n=>`<div class="ai-num-chip">${n}</div>`).join('')}</div>
-      <div class="ai-analysis">📊 <strong style="color:#a855f7">Análisis:</strong> ${parsed.analisis||''}</div>
-      <p style="font-size:.55rem;color:var(--ts);margin-top:8px;opacity:.7">⚠️ Sugerencia recreativa basada en numerología.</p>`;
-    res.classList.add('visible');
-  }catch(e){
-    res.innerHTML=`<p style="font-size:.72rem;color:#e74c3c;padding:8px">❌ No se pudo conectar con IA. Intenta de nuevo.</p>`;
-  }
+    if(apiRes.ok){
+      const data=await apiRes.json();
+      if(data.content){
+        const txt=(data.content||[]).map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+        const p=JSON.parse(txt);
+        if(p.nums&&p.nums.length>=2){ resultado=p; source='ia'; }
+      }
+    }
+  }catch(e){ /* fall through to local */ }
+
+  // 2. Local statistical analysis fallback
+  if(!resultado){ resultado=generarPrediccionLocal(raw,h); source='local'; }
+
+  const nums=(resultado.nums||[]).slice(0,4);
+  const srcBadge=source==='ia'
+    ?`<span style="font-size:.52rem;padding:2px 8px;border-radius:20px;background:rgba(168,85,247,.15);color:#c084fc;font-weight:800;letter-spacing:.5px">🤖 Claude IA</span>`
+    :`<span style="font-size:.52rem;padding:2px 8px;border-radius:20px;background:rgba(39,174,96,.12);color:var(--green);font-weight:800;letter-spacing:.5px">📊 Análisis Local</span>`;
+
+  res.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px">
+      <p style="font-size:.65rem;color:#a855f7;font-weight:800;letter-spacing:1px;text-transform:uppercase">🔮 Combinaciones sugeridas:</p>
+      ${srcBadge}
+    </div>
+    <div class="ai-nums">${nums.map(n=>`<div class="ai-num-chip">${n}</div>`).join('')}</div>
+    <div class="ai-analysis" style="margin-top:8px">📊 <strong style="color:#a855f7">Análisis:</strong> ${resultado.analisis||''}</div>
+    <p style="font-size:.55rem;color:var(--ts);margin-top:8px;opacity:.7">⚠️ Sugerencia recreativa basada en numerología. No garantiza resultados.</p>`;
+  res.classList.add('visible');
   btn.disabled=false;
+}
+
+/* ── Local fallback: genuine stat analysis ── */
+function generarPrediccionLocal(raw, history){
+  const counts=Array(10).fill(0);
+  let total=0;
+  history.forEach(e=>(e.allDigits||[]).forEach(d=>{if(d>=0&&d<=9){counts[d]++;total++;}}));
+
+  // Seed from current number if no history
+  if(!total&&raw){
+    raw.split('').map(Number).forEach(d=>{counts[d]+=5;}); total=raw.length*5;
+  }
+  if(!total){
+    // truly empty: uniform
+    counts.forEach((_,i)=>{counts[i]=1;}); total=10;
+  }
+
+  const byFreq=counts.map((c,i)=>({d:i,c})).sort((a,b)=>b.c-a.c);
+  const hot=byFreq.slice(0,5).map(x=>x.d);
+  const cold=byFreq.slice(-5).map(x=>x.d);
+
+  // Recent 3 hot
+  const recent=history.slice(0,3);
+  const rCounts=Array(10).fill(0);
+  recent.forEach(e=>(e.allDigits||[]).forEach(d=>{if(d>=0&&d<=9)rCounts[d]++;}));
+  const rHot=[...rCounts].map((c,i)=>({d:i,c})).sort((a,b)=>b.c-a.c).slice(0,5).map(x=>x.d);
+
+  const pad=(arr,n)=>{let a=[...arr];while(a.length<n)a.push(Math.floor(Math.random()*10));return a.slice(0,n);};
+
+  // Combo 1: recent hot
+  const c1=pad(rHot.length>=5?rHot:[...rHot,...hot],5).join('');
+  // Combo 2: alternating hot-cold
+  const c2=pad([hot[0],cold[0],hot[1],cold[1],hot[2]].filter(x=>x!==undefined),5).join('');
+  // Combo 3: rotation from current number
+  let c3;
+  if(raw&&raw.length===5){
+    c3=raw.split('').map((d,i)=>(parseInt(d)+(hot[i%hot.length]||0))%10).join('');
+  }else{
+    c3=pad([...hot.slice(0,3),...cold.slice(0,2)],5).join('');
+  }
+  // Combo 4: cold digits shifted +1
+  const c4=pad(cold.slice(0,5).map(d=>(d+1)%10),5).join('');
+
+  const hotStr=hot.slice(0,3).join(', ');
+  const coldStr=cold.slice(0,3).join(', ');
+  const analisis=history.length>1
+    ?`${history.length} análisis procesados. Dígitos más frecuentes: ${hotStr}. Dígitos rezagados: ${coldStr}. Combinación 1: racha reciente. Combinación 2: alternancia caliente-frío. Combinación 3: rotación numerológica desde número actual. Combinación 4: rebote de dígitos ausentes.`
+    :`Sin historial suficiente. Análisis basado en el número ${raw}. Genera más cálculos para mejorar la precisión estadística.`;
+
+  return{nums:[c1,c2,c3,c4],analisis};
+}
+
+/* ══════════════════════════════════
+   RACHA Y PATRONES
+══════════════════════════════════ */
+function renderRacha(){
+  const el=document.getElementById('racha-content'); el.innerHTML='';
+  const h=getHistory();
+  if(h.length<2){
+    el.innerHTML='<div class="racha-empty">Necesitas al menos 2 análisis guardados.<br>Haz tus cálculos en la pestaña 🍀</div>';
+    return;
+  }
+
+  // Aggregate digit counts per analysis (last 5)
+  const last5=h.slice(0,5);
+  const recent3=h.slice(0,3);
+
+  // Count appearances per digit across recent3
+  const r3counts=Array(10).fill(0);
+  recent3.forEach(e=>(e.allDigits||[]).forEach(d=>{if(d>=0&&d<=9)r3counts[d]++;}));
+
+  // All-time counts
+  const allCounts=Array(10).fill(0);
+  h.forEach(e=>(e.allDigits||[]).forEach(d=>{if(d>=0&&d<=9)allCounts[d]++;}));
+
+  // Hot = appear in ALL of last 3 analyses (min appearances > 0 in each)
+  // Simple approach: digits with highest r3counts are hot
+  const sorted=[...r3counts].map((c,i)=>({d:i,c})).sort((a,b)=>b.c-a.c);
+  const hotDigits=sorted.filter(x=>x.c>0).slice(0,5).map(x=>x.d);
+
+  // Cold = digits absent from last 3 analyses OR low count
+  // Use all-time count: digits that appear rarely recently
+  const coldDigits=sorted.slice(-5).map(x=>x.d);
+
+  // Esencia trail (last 7)
+  const esTrail=h.slice(0,7).map(e=>e.esencia).reverse();
+
+  // Racha caliente: same digit in ALL 3 recent analyses
+  const enAll3=Array.from({length:10},(_,d)=>
+    recent3.every(e=>(e.allDigits||[]).includes(d))
+  ).map((b,d)=>({d,b})).filter(x=>x.b).map(x=>x.d);
+
+  // Best combo from hot digits
+  const comboHot=hotDigits.slice(0,5).join('');
+  const comboCold=coldDigits.slice(0,5).map(d=>(d+1)%10).join('');
+
+  // Detect esencia streak
+  const esencias=h.slice(0,5).map(e=>e.esencia);
+  const streakEs=esencias[0];
+  const esStreak=esencias.filter(e=>e===streakEs).length;
+
+  el.innerHTML=`
+    <!-- Hot/Cold boxes -->
+    <div class="racha-grid">
+      <div class="racha-box hot">
+        <div class="racha-box-title">🔥 Dígitos Calientes</div>
+        <div class="racha-digits">${hotDigits.map(d=>`<div class="racha-digit hot">${d}</div>`).join('')}</div>
+        <p style="font-size:.58rem;color:#e74c3c;margin-top:6px;opacity:.8">Más frecuentes<br>últimos 3 análisis</p>
+      </div>
+      <div class="racha-box cold">
+        <div class="racha-box-title">🧊 Dígitos Fríos</div>
+        <div class="racha-digits">${coldDigits.map(d=>`<div class="racha-digit cold">${d}</div>`).join('')}</div>
+        <p style="font-size:.58rem;color:#2980b9;margin-top:6px;opacity:.8">Menos frecuentes<br>últimos 3 análisis</p>
+      </div>
+    </div>
+
+    ${enAll3.length>0?`
+    <div class="racha-box streak" style="margin-bottom:10px;border-radius:12px;padding:12px 10px;text-align:center">
+      <div class="racha-box-title">⚡ En Racha Total</div>
+      <div class="racha-digits" style="justify-content:center;margin-top:6px">
+        ${enAll3.map(d=>`<div class="racha-digit hot" style="width:34px;height:34px;font-size:1rem">${d}</div>`).join('')}
+      </div>
+      <p style="font-size:.6rem;color:var(--gold);margin-top:6px">Aparecen en los últimos 3 análisis</p>
+    </div>`:''}
+
+    <!-- Tendencia esencia -->
+    <div class="card" style="margin-bottom:10px;padding:12px 14px">
+      <div class="sec-title" style="font-size:.72rem;margin-bottom:10px">📈 Tendencia de Esencia (últimos ${Math.min(7,h.length)})</div>
+      <div class="esencia-trail">
+        ${esTrail.map((e,i)=>`<div class="es-chip${i===esTrail.length-1?' last':''}" title="Más reciente">${e}</div>`).join('')}
+      </div>
+      ${esStreak>=3?`<p style="font-size:.62rem;color:var(--gold);text-align:center;margin-top:8px;font-weight:800">🔁 Racha de esencia ${streakEs} — aparece ${esStreak} veces seguidas</p>`:''}
+    </div>
+
+    <!-- Combos sugeridos por racha -->
+    <div class="card" style="padding:12px 14px">
+      <div class="sec-title" style="font-size:.72rem;margin-bottom:10px">🎯 Combos de Racha Sugeridos</div>
+      <p style="font-size:.6rem;color:var(--ts);margin-bottom:8px;font-weight:700">CALIENTE (dígitos frecuentes)</p>
+      <div class="racha-combo"><div class="racha-num-chip">${comboHot}</div></div>
+      <p style="font-size:.6rem;color:var(--ts);margin-top:10px;margin-bottom:8px;font-weight:700">REBOTE (dígitos fríos +1)</p>
+      <div class="racha-combo"><div class="racha-num-chip" style="border-color:rgba(41,128,185,.4);color:#2980b9">${comboCold}</div></div>
+      <p style="font-size:.52rem;color:var(--ts);margin-top:10px;opacity:.6;text-align:center">Basado en ${h.length} análisis. Solo orientativo.</p>
+    </div>`;
 }
 
 /* ══════════════════════════════════
@@ -1841,6 +2083,7 @@ renderRecs();
 renderSorteos();
 renderHistorial();
 renderFrecuencia();
+renderRacha();
 </script>
 </body>
 </html>
